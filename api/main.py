@@ -25,6 +25,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 app = FastAPI()
+from npc_api import router as npc_router
+app.include_router(npc_router)
 
 origins = [
     "*"

@@ -1,10 +1,7 @@
 import React from 'react';
-import { Group, Image, Text, Anchor, Button } from '@mantine/core';
+import { Group, Text, Anchor, Button } from '@mantine/core';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 使用 Mantine 内置图标
-import logo from '../assets/logo.png';
-import synthlabsLogo from '../assets/synthlabs.png';
-import medarcLogo from '../assets/medarc.png';
 import styles from './Header.module.css';  // Import the CSS module
 import { useScriptContext } from '../providers/scriptContext';
 
@@ -40,7 +37,7 @@ export default function Header() {
         }}
       >
         <img 
-          src={logo} 
+          src={process.env.PUBLIC_URL + '/favicon.svg'}
           alt="AI 不在场证明 Logo"
           width="90px" 
           className={styles.logo}
@@ -158,15 +155,7 @@ export default function Header() {
             transition: 'all 0.3s ease'
           }}
         >
-          <Image 
-            src={synthlabsLogo} 
-            alt="SynthLabs Logo" 
-            width={40} 
-            height={40}
-            style={{
-              filter: 'drop-shadow(0 0 5px rgba(0, 194, 255, 0.3))'
-            }}
-          />
+          <Text size="sm">SynthLabs</Text>
         </Anchor>
         <Anchor 
           href="https://medarc.ai/" 
@@ -178,15 +167,7 @@ export default function Header() {
             transition: 'all 0.3s ease'
           }}
         >
-          <Image 
-            src={medarcLogo} 
-            alt="MedArc Logo" 
-            width={40} 
-            height={40}
-            style={{
-              filter: 'drop-shadow(0 0 5px rgba(0, 194, 255, 0.3))'
-            }}
-          />
+          <Text size="sm">MedARC</Text>
         </Anchor>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Actor } from "../providers/mysteryContext";
-import { Group, Text, Image } from "@mantine/core";
-import { resolveAvatarSrc } from "../utils/avatarUtils";
+import { Group, Text } from "@mantine/core";
+import ActorImage from "./ActorImage";
 import { getSidebarRoleInfo } from "../utils/roleUtils";
 
 interface Props {
@@ -45,15 +45,7 @@ export default function SidebarAvatar({
           : `0 2px 8px ${roleInfo.color}33`
       }}
     >
-      <Image
-        src={resolveAvatarSrc(actor.image)}
-        style={{
-          width: 50,
-          height: 50,
-          borderRadius: 50,
-          objectFit: 'cover'
-        } as React.CSSProperties}
-      />
+      <ActorImage actor={actor} />
       <div style={{ flex: 1 }}>
         <Text 
           style={{

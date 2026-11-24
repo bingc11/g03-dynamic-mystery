@@ -78,18 +78,13 @@ const BaseModal: React.FC<BaseModalProps> = ({
   // 合并预设样式和自定义样式
   const baseStyles = variantStyles[variant];
   const mergedStyles: ModalProps['styles'] = styles
-    ? (theme) => {
-        const base = typeof baseStyles === 'function' ? baseStyles(theme) : baseStyles;
-        const custom = typeof styles === 'function' ? styles(theme) : styles;
-        return {
-          ...base,
-          ...custom,
-          content: { ...(base as any)?.content, ...(custom as any)?.content },
-          header: { ...(base as any)?.header, ...(custom as any)?.header },
-          title: { ...(base as any)?.title, ...(custom as any)?.title },
-          body: { ...(base as any)?.body, ...(custom as any)?.body },
-          close: { ...(base as any)?.close, ...(custom as any)?.close },
-        };
+    ? {
+        ...baseStyles, ...styles,
+        content: { ...baseStyles?.content, ...styles.content },
+        header: { ...baseStyles?.header, ...styles.header },
+        title: { ...baseStyles?.title, ...styles.title },
+        body: { ...baseStyles?.body, ...styles.body },
+        close: { ...baseStyles?.close, ...styles.close },
       }
     : baseStyles;
 

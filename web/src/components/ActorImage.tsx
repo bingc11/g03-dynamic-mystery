@@ -1,6 +1,6 @@
 import React from "react";
 import { Actor } from "../providers/mysteryContext";
-import { Image } from "@mantine/core";
+import { Avatar } from "@mantine/core";
 import { resolveAvatarSrc } from "../utils/avatarUtils";
 
 interface Props {
@@ -9,14 +9,12 @@ interface Props {
 
 export default function ActorImage({ actor }: Props) {
   return (
-    <Image
+    <Avatar
       src={resolveAvatarSrc(actor.image)}
-      style={{
-        width: 50,
-        height: 50,
-        borderRadius: 50,
-        objectFit: 'cover'
-      } as React.CSSProperties}
-    />
+      size={50}
+      radius="xl"
+      color="cyan"
+      alt={actor.name}
+    >{actor.name.slice(0, 1)}</Avatar>
   );
 }
