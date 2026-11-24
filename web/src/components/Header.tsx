@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Image, Text, Anchor, Button } from '@mantine/core';
+import { Group, Text, Anchor, Button } from '@mantine/core';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 使用 Mantine 内置图标
 import styles from './Header.module.css';  // Import the CSS module

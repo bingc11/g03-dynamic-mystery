@@ -31,8 +31,8 @@
   },
   "scripts": {
     "start:local": "node start-local.cjs",
-    "start": "PORT=5001 REACT_APP_API_URL=http://0.0.0.0:10000 react-scripts start",
-    "build": "REACT_APP_API_URL=https://ai-murder-mystery-hackathon.onrender.com react-scripts build",
+    "start": "node start-local.cjs",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "generate-avatars": "node scripts/generate-avatar-list.js",
@@ -58,6 +58,7 @@
     ]
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
     "postcss": "^8.4.38",
     "postcss-preset-mantine": "^1.13.0",
     "postcss-simple-vars": "^7.0.1"

@@ -5,9 +5,7 @@
 
 import { ScriptEvidence } from '../types/script';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://ai-murder-mystery-hackathon.onrender.com' 
-  : 'http://localhost:10000';
+import { API_URL as API_BASE_URL } from '../constants';
 
 export interface EvidenceSaveResponse {
   success: boolean;

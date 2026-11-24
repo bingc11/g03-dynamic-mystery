@@ -2,6 +2,8 @@
 
 import { Evidence, EvidenceContext, EvidenceFilter, EvidenceStats, EvidenceDiscovery, EvidencePresentation, GameProgress } from '../types/evidence';
 import { nanoid } from 'nanoid';
+import { Script, ScriptEvidence } from '../types/script';
+import { initializeEvidencesForScript } from '../data/sampleEvidences';
 
 // 动态查找角色头像文件名的函数
 const findCharacterAvatarFilename = async (characterName: string): Promise<string | null> => {
@@ -661,9 +663,6 @@ export const buildEvidenceTooltip = (evidence: Evidence): string => {
 };
 
 // ==================== 证物初始化函数 ====================
-
-import { Script, ScriptEvidence } from '../types/script';
-import { initializeEvidencesForScript } from '../data/sampleEvidences';
 
 /**
  * 分离证物概况和线索的工具函数

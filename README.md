@@ -6,6 +6,10 @@
 
 ## 一分钟看懂改动
 
+![玩家先后询问御史同一件事，第二次得到了可追问来源的证言](docs/evidence/palace-investigation.png)
+
+这张图截自本机浏览器。左侧可选角色，中间是两次询问与回复，右侧供玩家记录。三种选择的因果记录可直接对照。[逐事件记录](docs/evidence/paths.jsonl)
+
 在仓库根目录执行以下命令。复演和规则测试仅需 Python 3.12 标准库。
 
 ```sh
@@ -26,7 +30,7 @@ python tools/local_demo.py
 
 ```sh
 cd web
-npm install --legacy-peer-deps
+npm ci --legacy-peer-deps
 npm run start:local
 ```
 
