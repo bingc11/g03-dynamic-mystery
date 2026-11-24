@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Float, JSON
-from sqlalchemy.ext.declarative import declarative_base
+from models import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
 
-Base = declarative_base()
 
 class EvidenceRecord(Base):
     __tablename__ = 'evidences'

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { NpcActions } from '../providers/npcActions';
 import { Button, Text, Container, Alert } from '@mantine/core';
 
 import { useScriptContext } from '../providers/scriptContext';
@@ -142,7 +143,7 @@ const PlayScript: React.FC = () => {
       </div>
 
       {/* 使用现有的游戏界面 */}
-      <Home />
+      <NpcActions key={currentScript.id} caseId={currentScript.id}><Home /></NpcActions>
     </div>
   );
 };

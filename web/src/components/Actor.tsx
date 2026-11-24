@@ -12,6 +12,7 @@ import ChatMessage from "./ChatMessage";
 import { generateBackgroundFromActor } from "../api/backgroundGenerator";
 import { useSessionContext } from "../providers/sessionContext";
 import { useScriptContext } from "../providers/scriptContext";
+import { registryQuestion, tracksActor, tracksEvidence, useNpcActions } from "../providers/npcActions";
 import CHARACTER_DATA from "../characters.json";
 import { 
   generateRoleReactionPrompt, 
@@ -287,6 +288,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const [currMessage, setCurrMessage] = React.useState("");
   const { actors, setActors, globalStory } = useMysteryContext();
   const { currentScript } = useScriptContext();
+  const npcAction = useNpcActions();
   const [loading, setLoading] = useState(false);
   const [cancelStream, setCancelStream] = useState<(() => void) | null>(null);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -307,9 +309,24 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const detectiveName = currentScript?.characters?.find(char => char.isPlayer)?.name;
   const victimName = currentScript?.characters?.find(char => char.isVictim)?.name;
 
+  const runNpcAction = async (message: string, action: 'ask' | 'show', source: string) => {
+    if (!npcAction || loading) return;
+    setLoading(true);
+    try {
+      await npcAction(actor, action, source, message);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSendMessage = () => {
     // 如果输入框为空或只有空白字符，不发送消息
     if (!currMessage.trim()) return;
+    const question = registryQuestion(currMessage);
+    if (!postGame && npcAction && question && tracksActor(actor)) {
+      setCurrMessage('');
+      void runNpcAction(currMessage.trim(), 'ask', question);
+      return;
+    }
     
     const newMessage: LLMMessage = {
       role: "user",
@@ -341,6 +358,11 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
 
   // 处理证物发送
   const handleEvidenceSend = (evidence: Evidence, textContent?: string) => {
+    if (!postGame && npcAction && tracksEvidence(actor, evidence.id)) {
+      setShowEvidenceSelector(false);
+      void runNpcAction('[发送证物] ' + evidence.name + (textContent ? '：' + textContent : ''), 'show', evidence.id);
+      return;
+    }
     // 构建完整的证物信息消息，供AI生成智能反应
     // AI获取完整信息（包含概况和线索）
     let evidenceDetails = getFullEvidenceForAI(evidence);
@@ -728,6 +750,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
 
         <Tooltip label="发送证物">
           <ActionIcon
+            aria-label="发送证物"
             size="lg"
             variant="subtle"
             color="yellow"

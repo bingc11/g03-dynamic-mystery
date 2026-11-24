@@ -16,8 +16,10 @@ import { QuizQuestion } from '../types/script';
 import TabbedRightPanel from '../components/TabbedRightPanel';
 import { ensureEvidencesInitialized } from '../utils/evidenceManager';
 import { Evidence } from '../types/evidence';
+import { tracksEvidence, useNpcActions } from '../providers/npcActions';
 
 export default function Home() {
+  const npcAction = useNpcActions();
   const { actors, setActors, globalStory } = useMysteryContext(); 
   const { currentScript } = useScriptContext();
   const [currActor, setCurrActor] = useState<number>(0);
@@ -232,6 +234,10 @@ export default function Home() {
     }
 
     const currentActor = actors[currActor];
+    if (!postGame && npcAction && tracksEvidence(currentActor, evidence.id)) {
+      void npcAction(currentActor, 'show', evidence.id, '[出示证物] ' + evidence.name);
+      return;
+    }
     const playerActor = getPlayerActor();
 
     // 构建证物消息

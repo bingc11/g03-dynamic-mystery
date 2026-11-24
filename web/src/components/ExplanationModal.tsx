@@ -1,10 +1,8 @@
 // src/components/ExplanationModal.tsx
 
 import React from 'react';
-import { Button, Text, Image, Stack, Group, Anchor, Card, Divider } from '@mantine/core';
+import { Button, Text, Stack, Group, Anchor, Card, Divider } from '@mantine/core';
 import { IconInfoCircle, IconBulb, IconSparkles } from '@tabler/icons-react';
-import pinkelephants from '../assets/pinkelephants.png';
-import pinkelephants2 from '../assets/pinkelephants2.png';
 import BaseModal from './BaseModal';
 
 interface ExplanationModalProps {
@@ -111,16 +109,7 @@ const ExplanationModal: React.FC<ExplanationModalProps> = ({ opened, onClose }) 
             borderRadius: '8px',
             border: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
-            <Image 
-              src={pinkelephants} 
-              alt="大语言模型中粉红大象现象示例" 
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
-              }}
-            />
+            <Text size="sm">大语言模型中粉红大象现象示例（原示意图未随源码提供）</Text>
           </div>
 
           <Text 
@@ -143,16 +132,7 @@ const ExplanationModal: React.FC<ExplanationModalProps> = ({ opened, onClose }) 
             borderRadius: '8px',
             border: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
-            <Image 
-              src={pinkelephants2} 
-              alt="批评与改进示例" 
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
-              }}
-            />
+            <Text size="sm">批评与改进示例（原示意图未随源码提供）</Text>
           </div>
 
           <Text 
