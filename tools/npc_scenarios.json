@@ -1,0 +1,61 @@
+[
+  {
+    "case": "harbor_blackout",
+    "seed": "harbor-contact",
+    "clues": ["gate_witness", "reset_log"],
+    "steps": [
+      {"actor": "阮岑", "text": "昨晚西门谁进过仓库？", "reply": "没看清脸"},
+      {"actor": "宋屿", "text": "帮我去问问门卫昨晚谁进过仓库", "task": "completed", "reply": "二十一点四十六分"},
+      {"actor": "阮岑", "text": "是谁来问过西门出入？", "reply": "据我亲历，是宋屿"},
+      {"actor": "林遥", "text": "替我核对这两份证词。", "task": "completed", "reply": "快八分钟"}
+    ],
+    "wrong": ["宋屿", "掩盖虚报货重"],
+    "correct": ["罗钧", "掩盖虚报货重"]
+  },
+  {
+    "case": "harbor_blackout",
+    "seed": "harbor-skeptical-witness",
+    "clues": ["supply_sheet", "harbor_audit_receipt"],
+    "relations": [["宋屿", "林遥", 0], ["阮岑", "宋屿", -2]],
+    "steps": [
+      {"actor": "宋屿", "text": "帮我去问问门卫昨晚谁进过仓库", "task": "failed"},
+      {"actor": "林遥", "text": "请看监控校时便条。", "evidence": "harbor_clock_strip"},
+      {"actor": "宋屿", "text": "有人提过监控时间的误差吗？", "reply": "请林遥核对"},
+      {"actor": "阮岑", "text": "可以帮我翻翻七号背心的领用表吗？", "reply": "停电检修工单"},
+      {"actor": "阮岑", "text": "请看停电检修工单。", "evidence": "harbor_work_order"},
+      {"actor": "阮岑", "text": "可以帮我翻翻七号背心的领用表吗？", "task": "completed", "reply": "由罗钧领取"},
+      {"actor": "宋屿", "text": "请看半张过磅联。", "evidence": "harbor_weight_slip"},
+      {"actor": "宋屿", "text": "请帮我核查夜航四号的送审底单。", "task": "completed"}
+    ],
+    "wrong": ["阮岑", "掩盖虚报货重"],
+    "correct": ["罗钧", "掩盖虚报货重"]
+  },
+  {
+    "case": "example_4",
+    "seed": "palace-contact",
+    "clues": ["registry_attestation"],
+    "steps": [
+      {"actor": "御史大夫", "text": "有人查过秘录登记吗？", "reply": "没有"},
+      {"actor": "太平公主", "text": "劳烦你向御史打听一下宫闱秘录的借阅登记。", "task": "completed", "reply": "未见完整的出库签押"},
+      {"actor": "御史大夫", "text": "有人查过秘录登记吗？", "reply": "有人托我核对过"},
+      {"actor": "御史大夫", "text": "谁来问过秘录登记？", "reply": "据我亲历，是太平公主"}
+    ],
+    "wrong": ["张昌宗", "掩盖武氏家族贪墨军饷"],
+    "correct": ["武惠妃", "掩盖武氏家族贪墨军饷"]
+  },
+  {
+    "case": "example_4",
+    "seed": "palace-records",
+    "clues": ["registry_copy"],
+    "steps": [
+      {"actor": "张昌宗", "text": "请看遗失的宫闱秘录。", "evidence": "evidence_manuscript_missing"},
+      {"actor": "御史大夫", "text": "请看遗失的宫闱秘录。", "evidence": "evidence_manuscript_missing"},
+      {"actor": "太平公主", "text": "能不能替我查一件事？", "reply": "哪位"},
+      {"actor": "御史大夫", "text": "请帮我对一对宫闱秘录的借阅登记。", "task": "completed", "reply": "出库栏均无签押"},
+      {"actor": "太平公主", "text": "麻烦翻一翻雨夜那份原簿。", "task": "failed", "reply": "无法调取原件"},
+      {"actor": "武惠妃", "text": "劳烦你核查一下封存的内廷名册。", "reply": "不愿意"}
+    ],
+    "wrong": ["太平公主", "掩盖武氏家族贪墨军饷"],
+    "correct": ["武惠妃", "掩盖武氏家族贪墨军饷"]
+  }
+]
