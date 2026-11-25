@@ -1,0 +1,1048 @@
+{
+  "mode": "mock",
+  "passed": true,
+  "correct": 55,
+  "total": 56,
+  "accuracy": 0.9821,
+  "unsafe_delegations": [],
+  "confusion": {
+    "inquire:timing → chat": 1
+  },
+  "mistakes": [
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "inquire:timing",
+      "text": "你亲眼看见监控显示几点？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    }
+  ],
+  "budget": 0,
+  "rows": [
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "inquire:gate",
+      "text": "昨晚西门谁进过仓库？",
+      "actual": "inquire:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "inquire:gate",
+      "text": "你在门岗看到过哪些人？",
+      "actual": "inquire:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "inquire:gate",
+      "text": "门卫的手记里写了什么？",
+      "actual": "inquire:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "inquire:timing",
+      "text": "你亲眼看见监控显示几点？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "inquire:registry",
+      "text": "你知道秘录登记写了什么吗？",
+      "actual": "inquire:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "inquire:registry",
+      "text": "借阅登记上有什么签押？",
+      "actual": "inquire:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "inquire:registry",
+      "text": "说说你所知道的宫闱秘录登记。",
+      "actual": "inquire:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "delegate:gate",
+      "text": "帮我去问问门卫昨晚谁进过仓库",
+      "actual": "delegate:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "delegate:gate",
+      "text": "拜托你向西门门卫打听昨夜的出入。",
+      "actual": "delegate:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "delegate:timing",
+      "text": "替我核对这两份证词。",
+      "actual": "delegate:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "delegate:timing",
+      "text": "烦请对照复电日志和北塔钟。",
+      "actual": "delegate:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "delegate:supply",
+      "text": "能劳烦你翻查七号背心的领用表吗？",
+      "actual": "delegate:supply",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "delegate:registry",
+      "text": "劳烦你向御史打听一下宫闱秘录的借阅登记。",
+      "actual": "delegate:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "delegate:registry",
+      "text": "请帮我对一对宫闱秘录的借阅登记。",
+      "actual": "delegate:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "delegate:archive",
+      "text": "麻烦翻一翻雨夜那份原簿。",
+      "actual": "delegate:archive",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "clarify",
+      "text": "能不能替我查一件事？",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "clarify",
+      "text": "能托你查一下那个吗？",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "clarify",
+      "text": "麻烦你先帮我核查一下，具体我等会儿说。",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "clarify",
+      "text": "有劳去问问，找谁我还没想好。",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "clarify",
+      "text": "可以请你代劳找一份材料吗？",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "clarify",
+      "text": "Please check something for me.",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "张昌宗",
+      "expected": "clarify",
+      "text": "请你查一下，我暂时不方便说查什么。",
+      "actual": "clarify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "followup:gate",
+      "text": "西门出入查到什么结果了？",
+      "actual": "followup:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "followup:gate",
+      "text": "我刚托你的仓库出入调查有进展吗？",
+      "actual": "followup:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "followup:timing",
+      "text": "复电日志的核查结果是什么？",
+      "actual": "followup:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "followup:supply",
+      "text": "领用表已经核对完了吗？",
+      "actual": "followup:supply",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "followup:registry",
+      "text": "秘录登记核对结果是什么？",
+      "actual": "followup:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "followup:registry",
+      "text": "先前托你查秘录的事情进展如何？",
+      "actual": "followup:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "followup:archive",
+      "text": "调阅雨夜原簿有消息了吗？",
+      "actual": "followup:archive",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "origin:gate",
+      "text": "是谁来问过西门出入？",
+      "actual": "origin:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "origin:gate",
+      "text": "昨夜出入的消息来源是谁？",
+      "actual": "origin:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "origin:timing",
+      "text": "你从谁那里听到监控校时的说法？",
+      "actual": "origin:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "origin:timing",
+      "text": "这条复电日志消息的出处是哪儿？",
+      "actual": "origin:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "origin:registry",
+      "text": "谁来问过秘录登记？",
+      "actual": "origin:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "origin:registry",
+      "text": "秘录借阅消息是从哪得知的？",
+      "actual": "origin:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "origin:registry",
+      "text": "那份借阅登记的说法有何来源？",
+      "actual": "origin:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "chat",
+      "text": "早啊，最近睡得好吗？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "chat",
+      "text": "你平日喜欢做什么？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "chat",
+      "text": "这里的风今天挺大。",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "chat",
+      "text": "多谢你肯见我。",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "chat",
+      "text": "今天精神可好？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "张昌宗",
+      "expected": "chat",
+      "text": "你喝茶喜欢放糖吗？",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "张昌宗",
+      "expected": "chat",
+      "text": "Good evening. How are you?",
+      "actual": "chat",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "cancel",
+      "text": "不用去问门卫了。",
+      "actual": "cancel",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "cancel",
+      "text": "取消我刚刚托你的校时委托。",
+      "actual": "cancel",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "cancel",
+      "text": "领用表先别查了。",
+      "actual": "cancel",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "cancel",
+      "text": "请撤回委托，暂时不要查秘录登记。",
+      "actual": "cancel",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "cancel",
+      "text": "不要联系御史了。",
+      "actual": "cancel",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "林遥",
+      "expected": "modify",
+      "text": "把原委托改成核对复电日志。",
+      "actual": "modify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "太平公主",
+      "expected": "modify",
+      "text": "我想改查雨夜原簿。",
+      "actual": "modify",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "receipt:gate",
+      "text": "有人来问过西门出入吗？",
+      "actual": "receipt:gate",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "宋屿",
+      "expected": "receipt:timing",
+      "text": "有人提过监控时间的误差吗？",
+      "actual": "receipt:timing",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "receipt:registry",
+      "text": "有人查过秘录登记吗？",
+      "actual": "receipt:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "receipt:registry",
+      "text": "你收到过秘录登记的委托吗？",
+      "actual": "receipt:registry",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "harbor_blackout",
+      "actor": "阮岑",
+      "expected": "recall",
+      "text": "你还记得我跟你说过什么吗？",
+      "actual": "recall",
+      "driver": "mock",
+      "model_candidate": null
+    },
+    {
+      "case": "example_4",
+      "actor": "御史大夫",
+      "expected": "recall",
+      "text": "我之前说的那件事你记不记得？",
+      "actual": "recall",
+      "driver": "mock",
+      "model_candidate": null
+    }
+  ],
+  "model": {
+    "attempts": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "input_budget_used": 0,
+    "output_budget_used": 0,
+    "latency_ms": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "outcomes": {
+      "mock": 56
+    },
+    "audit": [
+      {
+        "at": 1795618196.566,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:gate"
+      },
+      {
+        "at": 1795618196.567,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:gate"
+      },
+      {
+        "at": 1795618196.567,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:gate"
+      },
+      {
+        "at": 1795618196.567,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.568,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:registry"
+      },
+      {
+        "at": 1795618196.568,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:registry"
+      },
+      {
+        "at": 1795618196.569,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "inquire:registry"
+      },
+      {
+        "at": 1795618196.569,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:gate"
+      },
+      {
+        "at": 1795618196.569,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:gate"
+      },
+      {
+        "at": 1795618196.569,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:timing"
+      },
+      {
+        "at": 1795618196.57,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:timing"
+      },
+      {
+        "at": 1795618196.57,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:supply"
+      },
+      {
+        "at": 1795618196.57,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:registry"
+      },
+      {
+        "at": 1795618196.571,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:registry"
+      },
+      {
+        "at": 1795618196.571,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "delegate:archive"
+      },
+      {
+        "at": 1795618196.571,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.572,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.572,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.572,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.572,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.573,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.573,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "clarify"
+      },
+      {
+        "at": 1795618196.574,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:gate"
+      },
+      {
+        "at": 1795618196.574,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:gate"
+      },
+      {
+        "at": 1795618196.574,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:timing"
+      },
+      {
+        "at": 1795618196.574,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:supply"
+      },
+      {
+        "at": 1795618196.575,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:registry"
+      },
+      {
+        "at": 1795618196.575,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:registry"
+      },
+      {
+        "at": 1795618196.575,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "followup:archive"
+      },
+      {
+        "at": 1795618196.576,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:gate"
+      },
+      {
+        "at": 1795618196.576,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:gate"
+      },
+      {
+        "at": 1795618196.576,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:timing"
+      },
+      {
+        "at": 1795618196.577,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:timing"
+      },
+      {
+        "at": 1795618196.577,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:registry"
+      },
+      {
+        "at": 1795618196.577,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:registry"
+      },
+      {
+        "at": 1795618196.578,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "origin:registry"
+      },
+      {
+        "at": 1795618196.578,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.578,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.578,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.579,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.579,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.579,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "chat"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "cancel"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "cancel"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "cancel"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "cancel"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "cancel"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "modify"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "modify"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "receipt:gate"
+      },
+      {
+        "at": 1795618196.58,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "receipt:timing"
+      },
+      {
+        "at": 1795618196.581,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "receipt:registry"
+      },
+      {
+        "at": 1795618196.581,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "receipt:registry"
+      },
+      {
+        "at": 1795618196.581,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "recall"
+      },
+      {
+        "at": 1795618196.581,
+        "purpose": "intent",
+        "driver": "mock",
+        "prompt_version": "g03-issue5-v2",
+        "status": "mock",
+        "fallback": false,
+        "candidate_id": "recall"
+      }
+    ]
+  }
+}

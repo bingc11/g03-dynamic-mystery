@@ -192,6 +192,16 @@ async function main() {
   }
 
   try {
+    if (process.env.DEMO_LIVE === '1') {
+      await openCase('雾港停电案', 'harbor_blackout');
+      await talk('宋屿', '帮我去问问门卫昨晚谁进过仓库', { status: 'completed', fragment: /没看清脸/, driver: 'llm' });
+      await talk('阮岑', '有人来问过西门出入吗？', { fragment: /有人/, driver: 'llm' });
+      await talk('阮岑', '是谁来问过西门出入？', { fragment: /宋屿/, driver: 'llm' });
+      await talk('林遥', '请帮我比对监控复电日志和北塔标准钟。', { status: 'completed', fragment: /快八分钟/, driver: 'llm' });
+      await closeCase('宋屿', '罗钧', '掩盖虚报货重');
+      await capture('harbor_blackout', 'strict-harbor');
+      return;
+    }
     if (live) {
       await openCase('雾港停电案', 'harbor_blackout');
       const guest = await inviteGuest();
@@ -209,8 +219,8 @@ async function main() {
       return;
     }
     await openCase('深宫血色：玉玺谜云', 'example_4');
-    await talk('御史大夫', '请介绍一下案情。', { handled: false, fragment: /本机模拟对话/ });
-    await talk('张昌宗', '你平日喜欢做什么？', { handled: false, fragment: /本机模拟对话/ });
+    await talk('御史大夫', '请介绍一下案情。', { fragment: /我在听/ });
+    await talk('张昌宗', '你平日喜欢做什么？', { fragment: /我在听/ });
     await talk('御史大夫', '有人查过秘录登记吗？', { fragment: /没有|还未|还没/ });
     await talk('太平公主', '能不能替我查一件事？', { fragment: /哪|什么|具体/ });
     await talk('太平公主', '劳烦你向御史打听一下宫闱秘录的借阅登记。', {
@@ -294,6 +304,27 @@ async function main() {
     assert.equal(suggestion.driver, 'mock');
     assert.match(suggestion.text, /请他核查夜航四号的送审底单/);
     await page.getByText(suggestion.text, { exact: true }).waitFor();
+    await page.getByLabel('想核对的问题').fill('先弄清两座钟，再核对出入和送审底单');
+    const proposed = responseAt('assist');
+    await button('拆解调查目标').click();
+    const plan = await (await proposed).json();
+    assert(plan.steps.length >= 2);
+    const proposedStep = plan.steps[0];
+    let autoDispatched = false;
+    const watchDispatch = request => { if (request.url().endsWith('/npc/dialogue')) autoDispatched = true; };
+    page.on('request', watchDispatch);
+    await button(`填入${proposedStep.actor}的对话框`).click();
+    await choose(proposedStep.actor);
+    assert.equal(await dialogue(proposedStep.actor).inputValue(), proposedStep.text);
+    assert.equal(autoDispatched, false);
+    page.off('request', watchDispatch);
+    await dialogue(proposedStep.actor).fill('');
+    await records(page).click();
+    await button('更新复盘').click();
+    await page.getByRole('textbox', { name: '角色视角' }).waitFor();
+    await button('查看至此').first().click();
+    await page.getByText('正在查看截至所选事件的记录。').waitFor();
+    await capture('harbor_blackout', 'plan-replay');
     assert.equal(await button('查看结案解释').count(), 0);
     console.log('PASS browser grants evidence only to the finder, summarizes clues and gives a next step');
     await closeCase('宋屿', '罗钧', '掩盖虚报货重');

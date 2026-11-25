@@ -1,0 +1,1949 @@
+{
+  "mode": "llm-required",
+  "scenarios": [
+    {
+      "case": "harbor_blackout",
+      "passed": true,
+      "turns": [
+        {
+          "actor": "宋屿",
+          "input": "你好，今天天气不错。",
+          "outcome": {
+            "handled": true,
+            "reply": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-c3e2c82c002561f985e7d93b4b98e8d54e0a79a98203f458baf67e7b65a7d47471e9ebfb5a8dfbc48ec2a39feae016cc623399b7980fa12752e452232cf88577",
+              "actor": "宋屿",
+              "text": "你好，今天天气不错。",
+              "reply": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+              "driver": "llm",
+              "source": null,
+              "source_name": null,
+              "classification": "observation"
+            }
+          }
+        },
+        {
+          "actor": "宋屿",
+          "input": "帮我去问问门卫昨晚谁进过仓库",
+          "outcome": {
+            "handled": true,
+            "reply": "好，我去向门卫阮岑问清昨晚西门的出入。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d",
+              "actor": "宋屿",
+              "text": "帮我去问问门卫昨晚谁进过仓库",
+              "reply": "好，我去向门卫阮岑问清昨晚西门的出入。",
+              "driver": "llm",
+              "source": "gate",
+              "source_name": "昨晚西门的人员出入",
+              "classification": null
+            },
+            "task": {
+              "id": "d3fd4d6d443442a9a783cceccb2de60b",
+              "actor": "宋屿",
+              "status": "accepted",
+              "turn_id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d"
+            }
+          },
+          "settled": {
+            "handled": true,
+            "reply": "好，我去向门卫阮岑问清昨晚西门的出入。\n\n我问过阮岑。对方就《阮岑对西门出入的陈述》告诉我：二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。 这是对方的说法。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d",
+              "actor": "宋屿",
+              "text": "帮我去问问门卫昨晚谁进过仓库",
+              "reply": "好，我去向门卫阮岑问清昨晚西门的出入。\n\n我问过阮岑。对方就《阮岑对西门出入的陈述》告诉我：二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。 这是对方的说法。",
+              "driver": "llm",
+              "source": "gate_witness",
+              "source_name": "阮岑对西门出入的陈述",
+              "classification": "claim"
+            },
+            "task": {
+              "id": "d3fd4d6d443442a9a783cceccb2de60b",
+              "actor": "宋屿",
+              "status": "completed",
+              "turn_id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d"
+            }
+          }
+        },
+        {
+          "actor": "阮岑",
+          "input": "昨晚西门谁进过仓库？",
+          "outcome": {
+            "handled": true,
+            "reply": "《阮岑对西门出入的陈述》中的说法是“二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。”",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-e2caa0b7d20e0a826f54e639bd51954a51af76f2105197f63d777cab28fb034a6640ff5302029c776b7dd45ab069db37adc1fffa797710be2c92cce20aa00a42",
+              "actor": "阮岑",
+              "text": "昨晚西门谁进过仓库？",
+              "reply": "《阮岑对西门出入的陈述》中的说法是“二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。”",
+              "driver": "llm",
+              "source": "gate_witness",
+              "source_name": "阮岑对西门出入的陈述",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "阮岑",
+          "input": "有人来问过西门出入吗？",
+          "outcome": {
+            "handled": true,
+            "reply": "有人来核对过西门的出入。我告诉对方，我记的是北塔标准钟上的时间。你可以问我是谁来查的。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-e6201a4c05a41a75108fbb39aed98823e7c95d297a2c89e379c0aa4845211321e22b8300747982ff42613152c9c260389aa7039021644e15534cf60862f49679",
+              "actor": "阮岑",
+              "text": "有人来问过西门出入吗？",
+              "reply": "有人来核对过西门的出入。我告诉对方，我记的是北塔标准钟上的时间。你可以问我是谁来查的。",
+              "driver": "llm",
+              "source": "gate",
+              "source_name": "昨晚西门的人员出入",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "阮岑",
+          "input": "是谁来问过西门出入？",
+          "outcome": {
+            "handled": true,
+            "reply": "据我亲历，是宋屿联系我的。这是我的陈述。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-873d66e98db5df6986a5a9cc6174a7058a718df2668983cb2174c7922bee229148023189ba8237fe16046a5f5b77a19ae0b6620326d4aee80d0cb3dec13afac6",
+              "actor": "阮岑",
+              "text": "是谁来问过西门出入？",
+              "reply": "据我亲历，是宋屿联系我的。这是我的陈述。",
+              "driver": "llm",
+              "source": "gate",
+              "source_name": "昨晚西门的人员出入",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "林遥",
+          "input": "请帮我比对监控复电日志和北塔标准钟。",
+          "outcome": {
+            "handled": true,
+            "reply": "好，我去比对监控复电日志和北塔标准钟。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556",
+              "actor": "林遥",
+              "text": "请帮我比对监控复电日志和北塔标准钟。",
+              "reply": "好，我去比对监控复电日志和北塔标准钟。",
+              "driver": "llm",
+              "source": "timing",
+              "source_name": "对照两份证词的时间",
+              "classification": null
+            },
+            "task": {
+              "id": "4de3e429fb5143a1a2c651c6ab7e4b2b",
+              "actor": "林遥",
+              "status": "accepted",
+              "turn_id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556"
+            }
+          },
+          "settled": {
+            "handled": true,
+            "reply": "好，我去比对监控复电日志和北塔标准钟。\n\n我查阅了《北塔校时和监控复电日志》。已核查的记录：复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556",
+              "actor": "林遥",
+              "text": "请帮我比对监控复电日志和北塔标准钟。",
+              "reply": "好，我去比对监控复电日志和北塔标准钟。\n\n我查阅了《北塔校时和监控复电日志》。已核查的记录：复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。",
+              "driver": "llm",
+              "source": "reset_log",
+              "source_name": "北塔校时和监控复电日志",
+              "classification": "fact"
+            },
+            "task": {
+              "id": "4de3e429fb5143a1a2c651c6ab7e4b2b",
+              "actor": "林遥",
+              "status": "completed",
+              "turn_id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556"
+            }
+          }
+        },
+        {
+          "actor": "宋屿",
+          "input": "有件事想请你代劳，具体对象我还没想好。",
+          "outcome": {
+            "handled": true,
+            "reply": "你想让我联系哪位人物，或核对哪一份材料？",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-0ab7841c9055d87b91903209127d544f8099635d0737e3e06fc1b066694130eae946da9464575d7013f09f19351d3b94ab599de87b07dee21cb09f2d81803d0f",
+              "actor": "宋屿",
+              "text": "有件事想请你代劳，具体对象我还没想好。",
+              "reply": "你想让我联系哪位人物，或核对哪一份材料？",
+              "driver": "llm",
+              "source": null,
+              "source_name": null,
+              "classification": null
+            }
+          }
+        }
+      ],
+      "preview_steps": [
+        {
+          "actor": "林遥",
+          "text": "请帮我比对监控复电日志和北塔标准钟。",
+          "prepare": []
+        },
+        {
+          "actor": "宋屿",
+          "text": "请帮我向门卫阮岑问清昨晚西门的出入。",
+          "prepare": []
+        },
+        {
+          "actor": "宋屿",
+          "text": "请帮我凭过磅联上的单号向审计组核查待交件登记。",
+          "prepare": [
+            "半张过磅联"
+          ]
+        }
+      ],
+      "model": {
+        "attempts": 12,
+        "input_tokens": 19381,
+        "output_tokens": 108,
+        "input_budget_used": 19381,
+        "output_budget_used": 108,
+        "latency_ms": 12303,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 12
+        },
+        "audit": [
+          {
+            "at": 1795618021.391,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "bc8587763467564b49af54271c708eac8cd4eb6c0e65cbc1dec9b83066609ccc",
+            "input_tokens": 1575,
+            "output_tokens": 7,
+            "latency_ms": 1076,
+            "http_status": null,
+            "candidate_id": "chat",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "chat"
+          },
+          {
+            "at": 1795618022.456,
+            "purpose": "chat",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 2,
+            "retry": false,
+            "request_sha256": "dd02ebcfe997a3cc700715a8bd782bf905942811f2fb12720f8da47884365fcb",
+            "input_tokens": 672,
+            "output_tokens": 8,
+            "latency_ms": 1064,
+            "http_status": null,
+            "candidate_id": "clarify",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "clarify"
+          },
+          {
+            "at": 1795618023.257,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 3,
+            "retry": false,
+            "request_sha256": "d4fe4741a269bda78b929caa7f41ce4bdbf4e0727fba0f6369aec6e57eb50e6f",
+            "input_tokens": 2180,
+            "output_tokens": 10,
+            "latency_ms": 787,
+            "http_status": null,
+            "candidate_id": "delegate:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "delegate:gate"
+          },
+          {
+            "at": 1795618024.42,
+            "purpose": "plan",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 4,
+            "retry": false,
+            "request_sha256": "07b94c5d77d7267d4193418126d7a9c7de2f6988281bb7d7698330bb68046b79",
+            "input_tokens": 1223,
+            "output_tokens": 9,
+            "latency_ms": 1163,
+            "http_status": null,
+            "candidate_id": "ask_guard",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "ask_guard"
+          },
+          {
+            "at": 1795618025.273,
+            "purpose": "response",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 5,
+            "retry": false,
+            "request_sha256": "282f0b2d4a3dd048d288470734fce0079550b126d4b27ae0ab24a1e86a0178b1",
+            "input_tokens": 541,
+            "output_tokens": 8,
+            "latency_ms": 841,
+            "http_status": null,
+            "candidate_id": "disclose",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "disclose"
+          },
+          {
+            "at": 1795618026.301,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 6,
+            "retry": false,
+            "request_sha256": "dfaff95b75f8d831fe5a6024c0e86bdeb06de25d26b81d9360a9d847266ce275",
+            "input_tokens": 2112,
+            "output_tokens": 10,
+            "latency_ms": 1012,
+            "http_status": null,
+            "candidate_id": "inquire:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "inquire:gate"
+          },
+          {
+            "at": 1795618027.543,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 7,
+            "retry": false,
+            "request_sha256": "6c0ae0d61542f4d9460180d4593b5a2938d354df9991b00c457f3005f0604cf6",
+            "input_tokens": 2433,
+            "output_tokens": 10,
+            "latency_ms": 1227,
+            "http_status": null,
+            "candidate_id": "receipt:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "receipt:gate"
+          },
+          {
+            "at": 1795618028.8,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 8,
+            "retry": false,
+            "request_sha256": "aaf3295780fe3ff8aeaab171c869a887d59555d3968043b7486b746db28bf4a9",
+            "input_tokens": 2728,
+            "output_tokens": 9,
+            "latency_ms": 1247,
+            "http_status": null,
+            "candidate_id": "origin:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "origin:gate"
+          },
+          {
+            "at": 1795618029.641,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 9,
+            "retry": false,
+            "request_sha256": "d9d9af1138691ac5d0e0be038ee59144f7b3f23a1556d57cc4d0690cae5f87a5",
+            "input_tokens": 1640,
+            "output_tokens": 11,
+            "latency_ms": 831,
+            "http_status": null,
+            "candidate_id": "delegate:timing",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "delegate:timing"
+          },
+          {
+            "at": 1795618030.604,
+            "purpose": "plan",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 10,
+            "retry": false,
+            "request_sha256": "23c00691c10d46572beb384006143ff8bebf90f55515b4fe2124733443ebaaf1",
+            "input_tokens": 701,
+            "output_tokens": 10,
+            "latency_ms": 963,
+            "http_status": null,
+            "candidate_id": "inspect_reset",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "inspect_reset"
+          },
+          {
+            "at": 1795618031.677,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 11,
+            "retry": false,
+            "request_sha256": "6e11a58150fc936cfa85fe2092504d5f8c5ca37322a36645d1912df4ff81051c",
+            "input_tokens": 2962,
+            "output_tokens": 8,
+            "latency_ms": 1043,
+            "http_status": null,
+            "candidate_id": "clarify",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "clarify"
+          },
+          {
+            "at": 1795618032.743,
+            "purpose": "decompose",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 12,
+            "retry": false,
+            "request_sha256": "4000814bdfcc8a50c1b7ae48568b53001bb3ab217edae7aec5dc0e6881adb7bc",
+            "input_tokens": 614,
+            "output_tokens": 8,
+            "latency_ms": 1049,
+            "http_status": null,
+            "candidate_id": "timing",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "timing"
+          }
+        ]
+      },
+      "events": [
+        {
+          "id": "bc4005e7a9e74b1aabf19a7ad98012e5",
+          "time": "2026-11-25T14:47:01+00:00",
+          "kind": "decision",
+          "actor": "宋屿",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "chat",
+            "status": "selected",
+            "text": "普通对话"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "8a6ca959d2664cbabb3a623110c07edd",
+          "time": "2026-11-25T14:47:01+00:00",
+          "kind": "conversation",
+          "actor": "$player",
+          "recipient": "宋屿",
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "bc4005e7a9e74b1aabf19a7ad98012e5",
+          "result": {
+            "text": "你好，今天天气不错。",
+            "classification": "claim"
+          },
+          "driver": null
+        },
+        {
+          "id": "902c725a7ab04a2c9483d00af6a6fb60",
+          "time": "2026-11-25T14:47:02+00:00",
+          "kind": "decision",
+          "actor": "宋屿",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "8a6ca959d2664cbabb3a623110c07edd",
+          "result": {
+            "purpose": "chat",
+            "proposal": "clarify",
+            "status": "selected",
+            "text": "你想听我说说自己的情况，还是要问案子里的一条线索？"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "e2a195b280a240dcb24f8b10bb6759b1",
+          "time": "2026-11-25T14:47:02+00:00",
+          "kind": "conversation_reply",
+          "actor": "宋屿",
+          "recipient": "$player",
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "902c725a7ab04a2c9483d00af6a6fb60",
+          "result": {
+            "text": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+            "classification": "observation"
+          },
+          "driver": null
+        },
+        {
+          "id": "c000588342d94ba89838a018ecc129b4",
+          "time": "2026-11-25T14:47:03+00:00",
+          "kind": "decision",
+          "actor": "宋屿",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "delegate:gate",
+            "status": "selected",
+            "text": "委托处理：昨晚西门的人员出入"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "f8bb3a37b5a042a88400cf56ea5e992c",
+          "time": "2026-11-25T14:47:03+00:00",
+          "kind": "delegation",
+          "actor": "$player",
+          "recipient": "宋屿",
+          "source": "gate",
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "c000588342d94ba89838a018ecc129b4",
+          "result": {
+            "text": "帮我去问问门卫昨晚谁进过仓库"
+          },
+          "driver": null
+        },
+        {
+          "id": "f646fd920b29453284f065362dadbbd1",
+          "time": "2026-11-25T14:47:04+00:00",
+          "kind": "decision",
+          "actor": "宋屿",
+          "recipient": null,
+          "source": "gate",
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "f8bb3a37b5a042a88400cf56ea5e992c",
+          "result": {
+            "purpose": "plan",
+            "proposal": "ask_guard",
+            "status": "selected",
+            "text": "向门卫阮岑问清昨晚西门的出入"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "b3dbfe2aa2c347fa9eedb8fd450cb007",
+          "time": "2026-11-25T14:47:04+00:00",
+          "kind": "accepted",
+          "actor": "宋屿",
+          "recipient": "$player",
+          "source": "gate",
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": "f646fd920b29453284f065362dadbbd1",
+          "result": {
+            "task": "d3fd4d6d443442a9a783cceccb2de60b",
+            "action": "ask_guard",
+            "text": "好，我去向门卫阮岑问清昨晚西门的出入。",
+            "cost": 1
+          },
+          "driver": null
+        },
+        {
+          "id": "36026057a17f4c81bc3a6e0a6b07798c",
+          "time": "2026-11-25T14:47:04+00:00",
+          "kind": "private_question",
+          "actor": "宋屿",
+          "recipient": "阮岑",
+          "source": "gate",
+          "audience": [
+            "宋屿",
+            "阮岑"
+          ],
+          "cause": "b3dbfe2aa2c347fa9eedb8fd450cb007",
+          "result": {
+            "topic": "gate",
+            "text": "向门卫阮岑问清昨晚西门的出入"
+          },
+          "driver": null
+        },
+        {
+          "id": "1e144bf440c8472ba5c2d213ef0b0848",
+          "time": "2026-11-25T14:47:05+00:00",
+          "kind": "decision",
+          "actor": "阮岑",
+          "recipient": null,
+          "source": "gate",
+          "audience": [],
+          "cause": "36026057a17f4c81bc3a6e0a6b07798c",
+          "result": {
+            "purpose": "response",
+            "proposal": "disclose",
+            "status": "selected",
+            "text": ""
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "de38f0074acb4e5a87c98d947e817bdd",
+          "time": "2026-11-25T14:47:05+00:00",
+          "kind": "reception",
+          "actor": "阮岑",
+          "recipient": "宋屿",
+          "source": "gate",
+          "audience": [
+            "阮岑"
+          ],
+          "cause": "1e144bf440c8472ba5c2d213ef0b0848",
+          "result": {
+            "stance": "disclose",
+            "contact": "36026057a17f4c81bc3a6e0a6b07798c"
+          },
+          "driver": null
+        },
+        {
+          "id": "a6bd4d74c9364c0fb63423e1f6f533d0",
+          "time": "2026-11-25T14:47:05+00:00",
+          "kind": "claim",
+          "actor": "阮岑",
+          "recipient": "宋屿",
+          "source": "gate_witness",
+          "audience": [
+            "宋屿",
+            "阮岑"
+          ],
+          "cause": "de38f0074acb4e5a87c98d947e817bdd",
+          "result": {
+            "text": "二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。",
+            "classification": "claim",
+            "original_source": "阮岑对西门出入的陈述",
+            "prior": null
+          },
+          "driver": null
+        },
+        {
+          "id": "b9c50509ccb34a42a3d0dc1a23dd20d1",
+          "time": "2026-11-25T14:47:05+00:00",
+          "kind": "report",
+          "actor": "宋屿",
+          "recipient": "$player",
+          "source": "gate_witness",
+          "audience": [
+            "宋屿",
+            "$player"
+          ],
+          "cause": "a6bd4d74c9364c0fb63423e1f6f533d0",
+          "result": {
+            "task": "d3fd4d6d443442a9a783cceccb2de60b",
+            "status": "completed",
+            "text": "我问过阮岑。对方就《阮岑对西门出入的陈述》告诉我：二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。 这是对方的说法。",
+            "classification": "claim",
+            "topic": "gate"
+          },
+          "driver": null
+        },
+        {
+          "id": "af87fe02610743129f604695e8850379",
+          "time": "2026-11-25T14:47:06+00:00",
+          "kind": "decision",
+          "actor": "阮岑",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "阮岑"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "inquire:gate",
+            "status": "selected",
+            "text": "直接询问角色所知：昨晚西门的人员出入"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "aad8755cfd0b409ea63a3a872225ee71",
+          "time": "2026-11-25T14:47:06+00:00",
+          "kind": "statement",
+          "actor": "阮岑",
+          "recipient": "$player",
+          "source": "gate_witness",
+          "audience": [
+            "阮岑",
+            "$player"
+          ],
+          "cause": "af87fe02610743129f604695e8850379",
+          "result": {
+            "text": "《阮岑对西门出入的陈述》中的说法是“二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。”",
+            "classification": "claim",
+            "original_source": "阮岑对西门出入的陈述"
+          },
+          "driver": null
+        },
+        {
+          "id": "76d7aacc597247509f9dce9efe39fb3b",
+          "time": "2026-11-25T14:47:07+00:00",
+          "kind": "decision",
+          "actor": "阮岑",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "阮岑"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "receipt:gate",
+            "status": "selected",
+            "text": "询问收到过什么消息或联系：昨晚西门的人员出入"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "d55c57f028ae449daecbfab5e4341c28",
+          "time": "2026-11-25T14:47:07+00:00",
+          "kind": "statement",
+          "actor": "阮岑",
+          "recipient": "$player",
+          "source": "gate",
+          "audience": [
+            "阮岑",
+            "$player"
+          ],
+          "cause": "de38f0074acb4e5a87c98d947e817bdd",
+          "result": {
+            "text": "有人来核对过西门的出入。我告诉对方，我记的是北塔标准钟上的时间。你可以问我是谁来查的。",
+            "classification": "claim",
+            "receipt": true
+          },
+          "driver": null
+        },
+        {
+          "id": "44135bec9cb94adfb134a8bf5859d6dd",
+          "time": "2026-11-25T14:47:08+00:00",
+          "kind": "decision",
+          "actor": "阮岑",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "阮岑"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "origin:gate",
+            "status": "selected",
+            "text": "追问来源：昨晚西门的人员出入"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "59981abfc39840da8f89cf7e891872c5",
+          "time": "2026-11-25T14:47:08+00:00",
+          "kind": "statement",
+          "actor": "阮岑",
+          "recipient": "$player",
+          "source": "gate",
+          "audience": [
+            "阮岑",
+            "$player"
+          ],
+          "cause": "de38f0074acb4e5a87c98d947e817bdd",
+          "result": {
+            "text": "据我亲历，是宋屿联系我的。这是我的陈述。",
+            "classification": "claim",
+            "receipt": false
+          },
+          "driver": null
+        },
+        {
+          "id": "6cbf005649dd4ae8828a2f945e7235fe",
+          "time": "2026-11-25T14:47:09+00:00",
+          "kind": "decision",
+          "actor": "林遥",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "林遥"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "delegate:timing",
+            "status": "selected",
+            "text": "委托处理：对照两份证词的时间"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "9fc5af3b41e24e32b40ff3066a0d6207",
+          "time": "2026-11-25T14:47:09+00:00",
+          "kind": "delegation",
+          "actor": "$player",
+          "recipient": "林遥",
+          "source": "timing",
+          "audience": [
+            "$player",
+            "林遥"
+          ],
+          "cause": "6cbf005649dd4ae8828a2f945e7235fe",
+          "result": {
+            "text": "请帮我比对监控复电日志和北塔标准钟。"
+          },
+          "driver": null
+        },
+        {
+          "id": "7d7ae75075e34503bedfdb39d29bf944",
+          "time": "2026-11-25T14:47:10+00:00",
+          "kind": "decision",
+          "actor": "林遥",
+          "recipient": null,
+          "source": "timing",
+          "audience": [
+            "$player",
+            "林遥"
+          ],
+          "cause": "9fc5af3b41e24e32b40ff3066a0d6207",
+          "result": {
+            "purpose": "plan",
+            "proposal": "inspect_reset",
+            "status": "selected",
+            "text": "比对监控复电日志和北塔标准钟"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "1c7babc121e34390911703a7da66f462",
+          "time": "2026-11-25T14:47:10+00:00",
+          "kind": "accepted",
+          "actor": "林遥",
+          "recipient": "$player",
+          "source": "timing",
+          "audience": [
+            "$player",
+            "林遥"
+          ],
+          "cause": "7d7ae75075e34503bedfdb39d29bf944",
+          "result": {
+            "task": "4de3e429fb5143a1a2c651c6ab7e4b2b",
+            "action": "inspect_reset",
+            "text": "好，我去比对监控复电日志和北塔标准钟。",
+            "cost": 1
+          },
+          "driver": null
+        },
+        {
+          "id": "e57e7bf74f27476a8281bb73079f413a",
+          "time": "2026-11-25T14:47:10+00:00",
+          "kind": "object_read",
+          "actor": "林遥",
+          "recipient": null,
+          "source": "reset_log",
+          "audience": [
+            "林遥"
+          ],
+          "cause": "1c7babc121e34390911703a7da66f462",
+          "result": {
+            "text": "复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。",
+            "classification": "fact"
+          },
+          "driver": null
+        },
+        {
+          "id": "bf9a9b925394433985506abe85deb4a3",
+          "time": "2026-11-25T14:47:10+00:00",
+          "kind": "report",
+          "actor": "林遥",
+          "recipient": "$player",
+          "source": "reset_log",
+          "audience": [
+            "林遥",
+            "$player"
+          ],
+          "cause": "e57e7bf74f27476a8281bb73079f413a",
+          "result": {
+            "task": "4de3e429fb5143a1a2c651c6ab7e4b2b",
+            "status": "completed",
+            "text": "我查阅了《北塔校时和监控复电日志》。已核查的记录：复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。",
+            "classification": "fact",
+            "topic": "timing"
+          },
+          "driver": null
+        },
+        {
+          "id": "439de1f1fd7a42c98688d897840138b6",
+          "time": "2026-11-25T14:47:11+00:00",
+          "kind": "decision",
+          "actor": "宋屿",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "宋屿"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "clarify",
+            "status": "selected",
+            "text": "委托目标需要澄清"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "3f53526ba82244379a4af3466bbcfe4d",
+          "time": "2026-11-25T14:47:12+00:00",
+          "kind": "verdict",
+          "actor": "$player",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player"
+          ],
+          "cause": null,
+          "result": {
+            "text": "推理成立，你已结案。",
+            "suspect": "罗钧",
+            "motive": "掩盖虚报货重",
+            "correct": true
+          },
+          "driver": null
+        }
+      ]
+    },
+    {
+      "case": "example_4",
+      "passed": true,
+      "turns": [
+        {
+          "actor": "太平公主",
+          "input": "你好，今天天气不错。",
+          "outcome": {
+            "handled": true,
+            "reply": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-c3e2c82c002561f985e7d93b4b98e8d54e0a79a98203f458baf67e7b65a7d47471e9ebfb5a8dfbc48ec2a39feae016cc623399b7980fa12752e452232cf88577",
+              "actor": "太平公主",
+              "text": "你好，今天天气不错。",
+              "reply": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+              "driver": "llm",
+              "source": null,
+              "source_name": null,
+              "classification": "observation"
+            }
+          }
+        },
+        {
+          "actor": "太平公主",
+          "input": "劳烦你向御史打听一下宫闱秘录的借阅登记。",
+          "outcome": {
+            "handled": true,
+            "reply": "好，我去向御史大夫查问秘录的借阅登记。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d",
+              "actor": "太平公主",
+              "text": "劳烦你向御史打听一下宫闱秘录的借阅登记。",
+              "reply": "好，我去向御史大夫查问秘录的借阅登记。",
+              "driver": "llm",
+              "source": "registry",
+              "source_name": "宫闱秘录的借阅登记",
+              "classification": null
+            },
+            "task": {
+              "id": "b384fc55f68a4cb7b016bd70067ce451",
+              "actor": "太平公主",
+              "status": "accepted",
+              "turn_id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d"
+            }
+          },
+          "settled": {
+            "handled": true,
+            "reply": "好，我去向御史大夫查问秘录的借阅登记。\n\n我问过御史大夫。对方就《御史大夫对借阅登记的口头说明》告诉我：我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。 这是对方的说法。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d",
+              "actor": "太平公主",
+              "text": "劳烦你向御史打听一下宫闱秘录的借阅登记。",
+              "reply": "好，我去向御史大夫查问秘录的借阅登记。\n\n我问过御史大夫。对方就《御史大夫对借阅登记的口头说明》告诉我：我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。 这是对方的说法。",
+              "driver": "llm",
+              "source": "registry_attestation",
+              "source_name": "御史大夫对借阅登记的口头说明",
+              "classification": "claim"
+            },
+            "task": {
+              "id": "b384fc55f68a4cb7b016bd70067ce451",
+              "actor": "太平公主",
+              "status": "completed",
+              "turn_id": "seat-a7dc2a0abec22cf1efe972b1fddf8b5f0aecdf15e361bcc191ecb1426d20a54c320e0fb81b6f7e6b4b61ffbe125288d0c0c91bfbef6148fbf4bb8f1fa5ceee7d"
+            }
+          }
+        },
+        {
+          "actor": "御史大夫",
+          "input": "你知道秘录登记写了什么吗？",
+          "outcome": {
+            "handled": true,
+            "reply": "《御史大夫对借阅登记的口头说明》中的说法是“我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。”",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-e2caa0b7d20e0a826f54e639bd51954a51af76f2105197f63d777cab28fb034a6640ff5302029c776b7dd45ab069db37adc1fffa797710be2c92cce20aa00a42",
+              "actor": "御史大夫",
+              "text": "你知道秘录登记写了什么吗？",
+              "reply": "《御史大夫对借阅登记的口头说明》中的说法是“我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。”",
+              "driver": "llm",
+              "source": "registry_attestation",
+              "source_name": "御史大夫对借阅登记的口头说明",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "御史大夫",
+          "input": "有人查过秘录登记吗？",
+          "outcome": {
+            "handled": true,
+            "reply": "有人托我核对过这份登记。你可以再问我是谁提出的。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-e6201a4c05a41a75108fbb39aed98823e7c95d297a2c89e379c0aa4845211321e22b8300747982ff42613152c9c260389aa7039021644e15534cf60862f49679",
+              "actor": "御史大夫",
+              "text": "有人查过秘录登记吗？",
+              "reply": "有人托我核对过这份登记。你可以再问我是谁提出的。",
+              "driver": "llm",
+              "source": "registry",
+              "source_name": "宫闱秘录的借阅登记",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "御史大夫",
+          "input": "谁来问过秘录登记？",
+          "outcome": {
+            "handled": true,
+            "reply": "据我亲历，是太平公主联系我的。这是我的陈述。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-873d66e98db5df6986a5a9cc6174a7058a718df2668983cb2174c7922bee229148023189ba8237fe16046a5f5b77a19ae0b6620326d4aee80d0cb3dec13afac6",
+              "actor": "御史大夫",
+              "text": "谁来问过秘录登记？",
+              "reply": "据我亲历，是太平公主联系我的。这是我的陈述。",
+              "driver": "llm",
+              "source": "registry",
+              "source_name": "宫闱秘录的借阅登记",
+              "classification": "claim"
+            }
+          }
+        },
+        {
+          "actor": "御史大夫",
+          "input": "请帮我查阅御史台副册，核对宫闱秘录出库签押。",
+          "outcome": {
+            "handled": true,
+            "reply": "好，我去核对御史台副册的出库栏。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556",
+              "actor": "御史大夫",
+              "text": "请帮我查阅御史台副册，核对宫闱秘录出库签押。",
+              "reply": "好，我去核对御史台副册的出库栏。",
+              "driver": "llm",
+              "source": "registry",
+              "source_name": "宫闱秘录的借阅登记",
+              "classification": null
+            },
+            "task": {
+              "id": "d34f4f28164840e2bdc3bb505205d1c2",
+              "actor": "御史大夫",
+              "status": "accepted",
+              "turn_id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556"
+            }
+          },
+          "settled": {
+            "handled": true,
+            "reply": "好，我去核对御史台副册的出库栏。\n\n我查阅了《御史台副册》。已核查的记录：御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556",
+              "actor": "御史大夫",
+              "text": "请帮我查阅御史台副册，核对宫闱秘录出库签押。",
+              "reply": "好，我去核对御史台副册的出库栏。\n\n我查阅了《御史台副册》。已核查的记录：御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。",
+              "driver": "llm",
+              "source": "registry_copy",
+              "source_name": "御史台副册",
+              "classification": "fact"
+            },
+            "task": {
+              "id": "d34f4f28164840e2bdc3bb505205d1c2",
+              "actor": "御史大夫",
+              "status": "completed",
+              "turn_id": "seat-563be3d4ace7d8bae440129e7a84ac95a09ff3e87714d704586be390f74ba1af200aed8ad7ac52fec35e428ac4ec30d0a827b2bf4c99417372ac1e726dadf556"
+            }
+          }
+        },
+        {
+          "actor": "太平公主",
+          "input": "有件事想请你代劳，具体对象我还没想好。",
+          "outcome": {
+            "handled": true,
+            "reply": "你想让我联系哪位人物，或核对哪一份材料？",
+            "driver": "llm",
+            "turn": {
+              "id": "seat-0ab7841c9055d87b91903209127d544f8099635d0737e3e06fc1b066694130eae946da9464575d7013f09f19351d3b94ab599de87b07dee21cb09f2d81803d0f",
+              "actor": "太平公主",
+              "text": "有件事想请你代劳，具体对象我还没想好。",
+              "reply": "你想让我联系哪位人物，或核对哪一份材料？",
+              "driver": "llm",
+              "source": null,
+              "source_name": null,
+              "classification": null
+            }
+          }
+        }
+      ],
+      "preview_steps": [
+        {
+          "actor": "太平公主",
+          "text": "请帮我向御史大夫查问秘录的借阅登记。",
+          "prepare": []
+        },
+        {
+          "actor": "张昌宗",
+          "text": "请帮我按香囊袋缝纹样核对领用单。",
+          "prepare": [
+            "张昌宗的香囊"
+          ]
+        }
+      ],
+      "model": {
+        "attempts": 12,
+        "input_tokens": 22800,
+        "output_tokens": 107,
+        "input_budget_used": 22800,
+        "output_budget_used": 107,
+        "latency_ms": 12103,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 12
+        },
+        "audit": [
+          {
+            "at": 1795618033.688,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "ebc80117cf202364169b2fa84552ac6e1de774d5709130dd179f79ceead8a4d4",
+            "input_tokens": 1717,
+            "output_tokens": 7,
+            "latency_ms": 911,
+            "http_status": null,
+            "candidate_id": "chat",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "chat"
+          },
+          {
+            "at": 1795618034.609,
+            "purpose": "chat",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 2,
+            "retry": false,
+            "request_sha256": "dbb23c6ff4ab8d0c2ac4a14942972ce5197f384c6c738cfc584d435b9a847891",
+            "input_tokens": 667,
+            "output_tokens": 8,
+            "latency_ms": 920,
+            "http_status": null,
+            "candidate_id": "clarify",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "clarify"
+          },
+          {
+            "at": 1795618035.418,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 3,
+            "retry": false,
+            "request_sha256": "6337a3c54bf5ef5b0c673fdf6402e891eee859a97db094d838e8ad766c62c259",
+            "input_tokens": 2322,
+            "output_tokens": 10,
+            "latency_ms": 791,
+            "http_status": null,
+            "candidate_id": "delegate:registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "delegate:registry"
+          },
+          {
+            "at": 1795618036.451,
+            "purpose": "plan",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 4,
+            "retry": false,
+            "request_sha256": "76bab665a28cfc08a1240a8439672eb3ab102ab861c542950f9b7b4fa7921a89",
+            "input_tokens": 1248,
+            "output_tokens": 9,
+            "latency_ms": 1033,
+            "http_status": null,
+            "candidate_id": "consult_registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "consult_registry"
+          },
+          {
+            "at": 1795618037.312,
+            "purpose": "response",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 5,
+            "retry": false,
+            "request_sha256": "50ec151f26157c9982ea6557e43587d7911c9b9ff6586023f10076cd188aab56",
+            "input_tokens": 611,
+            "output_tokens": 8,
+            "latency_ms": 852,
+            "http_status": null,
+            "candidate_id": "disclose",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "disclose"
+          },
+          {
+            "at": 1795618038.11,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 6,
+            "retry": false,
+            "request_sha256": "5d9054de32a75a7abc7dc4cca4e55f0bfdf10126a9905be5a83c3a4786bde01e",
+            "input_tokens": 2321,
+            "output_tokens": 10,
+            "latency_ms": 778,
+            "http_status": null,
+            "candidate_id": "inquire:registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "inquire:registry"
+          },
+          {
+            "at": 1795618039.324,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 7,
+            "retry": false,
+            "request_sha256": "ff498ac345fdff33684bf050fda064ca51deaf3a987d0fc406afab23b10fe81e",
+            "input_tokens": 2645,
+            "output_tokens": 10,
+            "latency_ms": 1202,
+            "http_status": null,
+            "candidate_id": "inquire:registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "receipt:registry"
+          },
+          {
+            "at": 1795618040.42,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 8,
+            "retry": false,
+            "request_sha256": "c5dde88a0d84f059c6c08c216de09981fc8da2b97cb3b5992f79a18db4e9113e",
+            "input_tokens": 2928,
+            "output_tokens": 10,
+            "latency_ms": 1081,
+            "http_status": null,
+            "candidate_id": "receipt:registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "origin:registry"
+          },
+          {
+            "at": 1795618041.723,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 9,
+            "retry": false,
+            "request_sha256": "67b81ea4aedad6b8d320a27be59b0ba7969967221d857586bf571b790adcd142",
+            "input_tokens": 3071,
+            "output_tokens": 10,
+            "latency_ms": 1290,
+            "http_status": null,
+            "candidate_id": "delegate:registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "delegate:registry"
+          },
+          {
+            "at": 1795618042.767,
+            "purpose": "plan",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 10,
+            "retry": false,
+            "request_sha256": "8e41fc732d1ea65750e2772e8db583178d5e94a1356248ee61d8ce02cf6079b8",
+            "input_tokens": 1676,
+            "output_tokens": 10,
+            "latency_ms": 1044,
+            "http_status": null,
+            "candidate_id": "inspect_registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "inspect_registry"
+          },
+          {
+            "at": 1795618044.052,
+            "purpose": "intent",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 11,
+            "retry": false,
+            "request_sha256": "890c683892db578ab7ada029e80a8918b227566c9ec84cbb38f37f44b2743de7",
+            "input_tokens": 3086,
+            "output_tokens": 8,
+            "latency_ms": 1259,
+            "http_status": null,
+            "candidate_id": "clarify",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "clarify"
+          },
+          {
+            "at": 1795618045.005,
+            "purpose": "decompose",
+            "driver": "llm",
+            "prompt_version": "g03-issue5-v2",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 12,
+            "retry": false,
+            "request_sha256": "00339dce264d964c0f346cab43320c98789f6614913967e17f0bed34e0b1932b",
+            "input_tokens": 508,
+            "output_tokens": 7,
+            "latency_ms": 942,
+            "http_status": null,
+            "candidate_id": "registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "resolved_candidate_id": "registry"
+          }
+        ]
+      },
+      "events": [
+        {
+          "id": "0aa3ba6e1a194941a65092707ba83a27",
+          "time": "2026-11-25T14:47:13+00:00",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "chat",
+            "status": "selected",
+            "text": "普通对话"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "a6bc0d947fde4a629abdc7d039bcb617",
+          "time": "2026-11-25T14:47:13+00:00",
+          "kind": "conversation",
+          "actor": "$player",
+          "recipient": "太平公主",
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "0aa3ba6e1a194941a65092707ba83a27",
+          "result": {
+            "text": "你好，今天天气不错。",
+            "classification": "claim"
+          },
+          "driver": null
+        },
+        {
+          "id": "89becce0d3374470a3d921cdead7e0b1",
+          "time": "2026-11-25T14:47:14+00:00",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "a6bc0d947fde4a629abdc7d039bcb617",
+          "result": {
+            "purpose": "chat",
+            "proposal": "clarify",
+            "status": "selected",
+            "text": "你想听我说说自己的情况，还是要问案子里的一条线索？"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "d0e9ddd284044a999609be6a7ebe936e",
+          "time": "2026-11-25T14:47:14+00:00",
+          "kind": "conversation_reply",
+          "actor": "太平公主",
+          "recipient": "$player",
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "89becce0d3374470a3d921cdead7e0b1",
+          "result": {
+            "text": "你想听我说说自己的情况，还是要问案子里的一条线索？",
+            "classification": "observation"
+          },
+          "driver": null
+        },
+        {
+          "id": "14f67068af2c4d9ba767a63eeb4b4b99",
+          "time": "2026-11-25T14:47:15+00:00",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "delegate:registry",
+            "status": "selected",
+            "text": "委托处理：宫闱秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "6cfd6862a8f946ffb624f258c2a11a07",
+          "time": "2026-11-25T14:47:15+00:00",
+          "kind": "delegation",
+          "actor": "$player",
+          "recipient": "太平公主",
+          "source": "registry",
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "14f67068af2c4d9ba767a63eeb4b4b99",
+          "result": {
+            "text": "劳烦你向御史打听一下宫闱秘录的借阅登记。"
+          },
+          "driver": null
+        },
+        {
+          "id": "1fb8995298d8426494d80798a92d7ee5",
+          "time": "2026-11-25T14:47:16+00:00",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": "registry",
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "6cfd6862a8f946ffb624f258c2a11a07",
+          "result": {
+            "purpose": "plan",
+            "proposal": "consult_registry",
+            "status": "selected",
+            "text": "向御史大夫查问秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "0ce9fe1e477349d4b55e36d71f0f7afa",
+          "time": "2026-11-25T14:47:16+00:00",
+          "kind": "accepted",
+          "actor": "太平公主",
+          "recipient": "$player",
+          "source": "registry",
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": "1fb8995298d8426494d80798a92d7ee5",
+          "result": {
+            "task": "b384fc55f68a4cb7b016bd70067ce451",
+            "action": "consult_registry",
+            "text": "好，我去向御史大夫查问秘录的借阅登记。",
+            "cost": 1
+          },
+          "driver": null
+        },
+        {
+          "id": "165c1c2c7b5d4ca59c08091ae87aa048",
+          "time": "2026-11-25T14:47:16+00:00",
+          "kind": "private_question",
+          "actor": "太平公主",
+          "recipient": "御史大夫",
+          "source": "registry",
+          "audience": [
+            "太平公主",
+            "御史大夫"
+          ],
+          "cause": "0ce9fe1e477349d4b55e36d71f0f7afa",
+          "result": {
+            "topic": "registry",
+            "text": "向御史大夫查问秘录的借阅登记"
+          },
+          "driver": null
+        },
+        {
+          "id": "737283528cb04fc0a8046311ad82234b",
+          "time": "2026-11-25T14:47:17+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry",
+          "audience": [],
+          "cause": "165c1c2c7b5d4ca59c08091ae87aa048",
+          "result": {
+            "purpose": "response",
+            "proposal": "disclose",
+            "status": "selected",
+            "text": ""
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "8e800f219cba480e957971f57125572b",
+          "time": "2026-11-25T14:47:17+00:00",
+          "kind": "reception",
+          "actor": "御史大夫",
+          "recipient": "太平公主",
+          "source": "registry",
+          "audience": [
+            "御史大夫"
+          ],
+          "cause": "737283528cb04fc0a8046311ad82234b",
+          "result": {
+            "stance": "disclose",
+            "contact": "165c1c2c7b5d4ca59c08091ae87aa048"
+          },
+          "driver": null
+        },
+        {
+          "id": "acb45df928f741629593cddb9e844cd2",
+          "time": "2026-11-25T14:47:17+00:00",
+          "kind": "claim",
+          "actor": "御史大夫",
+          "recipient": "太平公主",
+          "source": "registry_attestation",
+          "audience": [
+            "太平公主",
+            "御史大夫"
+          ],
+          "cause": "8e800f219cba480e957971f57125572b",
+          "result": {
+            "text": "我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。",
+            "classification": "claim",
+            "original_source": "御史大夫对借阅登记的口头说明",
+            "prior": null
+          },
+          "driver": null
+        },
+        {
+          "id": "a8fb52d62feb4f1d98b0de8661f893de",
+          "time": "2026-11-25T14:47:17+00:00",
+          "kind": "report",
+          "actor": "太平公主",
+          "recipient": "$player",
+          "source": "registry_attestation",
+          "audience": [
+            "太平公主",
+            "$player"
+          ],
+          "cause": "acb45df928f741629593cddb9e844cd2",
+          "result": {
+            "task": "b384fc55f68a4cb7b016bd70067ce451",
+            "status": "completed",
+            "text": "我问过御史大夫。对方就《御史大夫对借阅登记的口头说明》告诉我：我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。 这是对方的说法。",
+            "classification": "claim",
+            "topic": "registry"
+          },
+          "driver": null
+        },
+        {
+          "id": "1fd8754532f0446fa7852c3e830f5663",
+          "time": "2026-11-25T14:47:18+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "inquire:registry",
+            "status": "selected",
+            "text": "直接询问角色所知：宫闱秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "655306fada6b49c582ce5ff3ae394551",
+          "time": "2026-11-25T14:47:18+00:00",
+          "kind": "statement",
+          "actor": "御史大夫",
+          "recipient": "$player",
+          "source": "registry_attestation",
+          "audience": [
+            "御史大夫",
+            "$player"
+          ],
+          "cause": "1fd8754532f0446fa7852c3e830f5663",
+          "result": {
+            "text": "《御史大夫对借阅登记的口头说明》中的说法是“我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。”",
+            "classification": "claim",
+            "original_source": "御史大夫对借阅登记的口头说明"
+          },
+          "driver": null
+        },
+        {
+          "id": "ed956288ba8c43a9889d780a11b2e0ef",
+          "time": "2026-11-25T14:47:19+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "receipt:registry",
+            "status": "selected",
+            "text": "询问收到过什么消息或联系：宫闱秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "2e43657dc8604913baa70c7ee3cbf219",
+          "time": "2026-11-25T14:47:19+00:00",
+          "kind": "statement",
+          "actor": "御史大夫",
+          "recipient": "$player",
+          "source": "registry",
+          "audience": [
+            "御史大夫",
+            "$player"
+          ],
+          "cause": "8e800f219cba480e957971f57125572b",
+          "result": {
+            "text": "有人托我核对过这份登记。你可以再问我是谁提出的。",
+            "classification": "claim",
+            "receipt": true
+          },
+          "driver": null
+        },
+        {
+          "id": "5ccf140ce2a54d309c708a0188430e53",
+          "time": "2026-11-25T14:47:20+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "origin:registry",
+            "status": "selected",
+            "text": "追问来源：宫闱秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "c7068fb73d194a62bd64743ef66154be",
+          "time": "2026-11-25T14:47:20+00:00",
+          "kind": "statement",
+          "actor": "御史大夫",
+          "recipient": "$player",
+          "source": "registry",
+          "audience": [
+            "御史大夫",
+            "$player"
+          ],
+          "cause": "8e800f219cba480e957971f57125572b",
+          "result": {
+            "text": "据我亲历，是太平公主联系我的。这是我的陈述。",
+            "classification": "claim",
+            "receipt": false
+          },
+          "driver": null
+        },
+        {
+          "id": "afbbf4c8e08445019b8eba5d1cca38f6",
+          "time": "2026-11-25T14:47:21+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "delegate:registry",
+            "status": "selected",
+            "text": "委托处理：宫闱秘录的借阅登记"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "f2dec81a7fad4a19a4bbace226ef0200",
+          "time": "2026-11-25T14:47:21+00:00",
+          "kind": "delegation",
+          "actor": "$player",
+          "recipient": "御史大夫",
+          "source": "registry",
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": "afbbf4c8e08445019b8eba5d1cca38f6",
+          "result": {
+            "text": "请帮我查阅御史台副册，核对宫闱秘录出库签押。"
+          },
+          "driver": null
+        },
+        {
+          "id": "a0651a2a093c4259a532b93791b55605",
+          "time": "2026-11-25T14:47:22+00:00",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry",
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": "f2dec81a7fad4a19a4bbace226ef0200",
+          "result": {
+            "purpose": "plan",
+            "proposal": "inspect_registry",
+            "status": "selected",
+            "text": "核对御史台副册的出库栏"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "749e1ead6f0b432ebafc373405e3b550",
+          "time": "2026-11-25T14:47:22+00:00",
+          "kind": "accepted",
+          "actor": "御史大夫",
+          "recipient": "$player",
+          "source": "registry",
+          "audience": [
+            "$player",
+            "御史大夫"
+          ],
+          "cause": "a0651a2a093c4259a532b93791b55605",
+          "result": {
+            "task": "d34f4f28164840e2bdc3bb505205d1c2",
+            "action": "inspect_registry",
+            "text": "好，我去核对御史台副册的出库栏。",
+            "cost": 1
+          },
+          "driver": null
+        },
+        {
+          "id": "f8225315e270435dac0808fab81226a3",
+          "time": "2026-11-25T14:47:22+00:00",
+          "kind": "object_read",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry_copy",
+          "audience": [
+            "御史大夫"
+          ],
+          "cause": "749e1ead6f0b432ebafc373405e3b550",
+          "result": {
+            "text": "御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。",
+            "classification": "fact"
+          },
+          "driver": null
+        },
+        {
+          "id": "61f8eae354c84cb4850b9556485a8e19",
+          "time": "2026-11-25T14:47:22+00:00",
+          "kind": "report",
+          "actor": "御史大夫",
+          "recipient": "$player",
+          "source": "registry_copy",
+          "audience": [
+            "御史大夫",
+            "$player"
+          ],
+          "cause": "f8225315e270435dac0808fab81226a3",
+          "result": {
+            "task": "d34f4f28164840e2bdc3bb505205d1c2",
+            "status": "completed",
+            "text": "我查阅了《御史台副册》。已核查的记录：御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。",
+            "classification": "fact",
+            "topic": "registry"
+          },
+          "driver": null
+        },
+        {
+          "id": "9e8473ee931046f6b2f98a29621eaae3",
+          "time": "2026-11-25T14:47:24+00:00",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player",
+            "太平公主"
+          ],
+          "cause": null,
+          "result": {
+            "purpose": "intent",
+            "proposal": "clarify",
+            "status": "selected",
+            "text": "委托目标需要澄清"
+          },
+          "driver": "llm"
+        },
+        {
+          "id": "8a936df94f564f3f9523b134706d0448",
+          "time": "2026-11-25T14:47:25+00:00",
+          "kind": "verdict",
+          "actor": "$player",
+          "recipient": null,
+          "source": null,
+          "audience": [
+            "$player"
+          ],
+          "cause": null,
+          "result": {
+            "text": "推理成立，你已结案。",
+            "suspect": "武惠妃",
+            "motive": "掩盖武氏家族贪墨军饷",
+            "correct": true
+          },
+          "driver": null
+        }
+      ]
+    }
+  ],
+  "pid": 18003
+}

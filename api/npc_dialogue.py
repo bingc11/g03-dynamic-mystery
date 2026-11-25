@@ -8,7 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from npc_case_data import validate_case
-from npc_decisions import Decisions
+from npc_decisions import Decisions, has_multiple_targets, task_control
 
 PLAYER = "$player"
 PARTY = "$party"
@@ -130,7 +130,13 @@ class Dialogue:
     def _view(self, actor):
         role = self.state["roles"][actor]
         definition = self.case["roles"][actor]
-        recent = [e for e in self.state["events"] if actor in e["audience"]][-8:]
+        recent = [deepcopy(e) for e in self.state["events"] if actor in e["audience"]
+                  and (e["kind"] not in {"conversation", "conversation_reply", "player_note", "decision"}
+                       or self.player in e["audience"] or not any(key in self.state["players"] for key in e["audience"]))][-8:]
+        for event in recent:
+            if "text" in event["result"]:
+                event["result"]["text"] = event["result"]["text"][:480]
+        memory = self._conversation_memory(actor)
         return {
             "actor": actor,
             "identity": definition.get("identity", actor),
@@ -143,7 +149,10 @@ class Dialogue:
                 for key, event in role["known"].items()
             ],
             "beliefs": deepcopy(role["beliefs"]),
-            "events": deepcopy(recent),
+            "events": recent,
+            "player_claims": [{"id": e["id"], "text": e["result"]["text"][:320],
+                               "classification": e["result"]["classification"]}
+                              for e in memory[-4:]],
             "active_tasks": [
                 {"topic": task["topic"], "action": task["authorization"]}
                 for task in self.state["tasks"].values()
@@ -152,13 +161,19 @@ class Dialogue:
             ],
         }
 
+    def _conversation_memory(self, actor):
+        return [event for event in self.state["events"] if event["kind"] in {"conversation", "player_note"}
+                and event["actor"] == self.player and event["recipient"] == actor]
+
     def _choose(self, purpose, actor, cause, source, candidates, fallback, **context):
         proposal, driver = self.decisions.choose(purpose, {**self._view(actor), **context}, candidates, fallback)
         legal = next((choice for choice in candidates if choice["id"] == proposal), None)
+        visible = (self.player, actor) if purpose in {"intent", "plan", "chat"} and legal else ()
         decision = self._event(
-            "decision" if legal else "rejected", actor, None, source, (), {
+            "decision" if legal else "rejected", actor, None, source, visible, {
                 "purpose": purpose, "proposal": proposal if legal else None,
                 "status": "selected" if legal else "illegal_candidate",
+                "text": legal["label"] if visible else "",
             }, cause, driver,
         )
         return (proposal if legal else None), decision, driver
@@ -210,21 +225,17 @@ class Dialogue:
             if self._allows(actor, self.case["actions"][key]) and not self._missing(actor, self.case["actions"][key])
         ]
 
-    def submit(self, request_id, actor, text, evidence=None):
-        self._begin_turn()
-        if self.seat["solved"]:
-            raise ValueError("你已结案，可以继续查看复盘")
-        if actor not in self.state["roles"]:
-            raise ValueError("案件中没有这个调查对象")
-        if evidence is not None:
-            return self._show(request_id, actor, text, evidence)
+    def intent_options(self, actor):
         topics = [
             {"id": key, "label": topic["label"], "aliases": topic["aliases"],
              "role_action_labels": [self.case["actions"][action_id]["label"] for action_id in topic["options"]
                                     if self._allows(actor, self.case["actions"][action_id])]}
             for key, topic in self.case["topics"].items()
         ]
-        candidates = [{"id": "chat", "label": "普通对话"}, {"id": "clarify", "label": "委托目标需要澄清"}]
+        candidates = [{"id": "chat", "label": "普通对话"}, {"id": "clarify", "label": "委托目标需要澄清"},
+                      {"id": "recall", "label": "回忆当前调查者亲口说过的内容"},
+                      {"id": "cancel", "label": "撤回或否定当前委托"},
+                      {"id": "modify", "label": "请求改动现有委托，需确认新内容"}]
         for topic in topics:
             candidates.extend([
                 {"id": f"delegate:{topic['id']}", "label": f"委托处理：{topic['label']}"},
@@ -233,26 +244,46 @@ class Dialogue:
                 {"id": f"receipt:{topic['id']}", "label": f"询问收到过什么消息或联系：{topic['label']}"},
                 {"id": f"origin:{topic['id']}", "label": f"追问来源：{topic['label']}"},
             ])
-        pending_by_actor = self.seat["pending"]
-        pending = pending_by_actor.get(actor)
         # The most recent player exchange provides the referent of “查到了吗” or “谁告诉你的”.
         observed = next(
             ([self._topic(event["source"])] for event in reversed(self.state["events"])
              if actor in event["audience"] and self.player in event["audience"] and self._topic(event["source"])),
             [],
         )
-        proposal, decision, driver = self._choose(
-            "intent", actor, None, None, candidates, "chat",
-            text=text, topics=topics, pending_topic=pending, observed_topics=observed,
-        )
+        return candidates, {"topics": topics, "pending_topic": self.seat["pending"].get(actor), "observed_topics": observed}
+
+    def submit(self, request_id, actor, text, evidence=None, *, note=False):
+        self._begin_turn()
+        if self.seat["solved"]:
+            raise ValueError("你已结案，可以继续查看复盘")
+        if actor not in self.state["roles"]:
+            raise ValueError("案件中没有这个调查对象")
+        if evidence is not None:
+            return self._show(request_id, actor, text, evidence)
+        if note:
+            event = self._event("player_note", self.player, actor, None, (self.player, actor),
+                                {"text": text, "classification": "note"})
+            reply = "我收到你的调查笔记了。里面的推测需要另找证词或材料核对。"
+            self._event("conversation_reply", actor, self.player, None, (self.player, actor),
+                        {"text": reply, "classification": "observation"}, event)
+            return self._reply(request_id, actor, text, reply, "rules")
+        candidates, context = self.intent_options(actor)
+        proposal, decision, driver = self._choose("intent", actor, None, None, candidates, "chat", text=text, **context)
+        pending_by_actor = self.seat["pending"]
+        control = task_control(text)
+        if proposal and proposal.startswith("delegate:") and (control or has_multiple_targets(text, context["topics"])):
+            # Ask before starting a task when the message may negate it or ask for several targets.
+            proposal = "clarify"
+        if proposal in {"cancel", "modify"}:
+            return self._control_task(request_id, actor, text, proposal, decision, driver)
+        if proposal == "recall":
+            return self._recall(request_id, actor, text, decision, driver)
         if proposal == "chat":
-            self._event("conversation", self.player, actor, None, (self.player, actor),
-                        {"text": text, "classification": "claim"}, decision)
-            return {"handled": False}
+            return self._chat(request_id, actor, text, decision, driver)
         if proposal is None:
             return self._reply(request_id, actor, text, "我没能确认你的要求。请再说清楚要找谁、核查什么。", driver)
         if proposal == "clarify":
-            pending_by_actor[actor] = pending or ""
+            pending_by_actor[actor] = pending_by_actor.get(actor) or ""
             return self._reply(request_id, actor, text, "你想让我联系哪位人物，或核对哪一份材料？", driver)
         kind, topic = proposal.split(":", 1)
         pending_by_actor.pop(actor, None)
@@ -262,6 +293,55 @@ class Dialogue:
             reply = self._inquire(actor, topic, decision)
         else:
             reply = self._followup(actor, topic, kind, decision)
+        return self._reply(request_id, actor, text, reply, driver)
+
+    def _chat(self, request_id, actor, text, cause, intent_driver):
+        entered = self._event("conversation", self.player, actor, None, (self.player, actor),
+                              {"text": text, "classification": "claim"}, cause)
+        role = self.case["roles"][actor]
+        choices = [
+            {"id": "listen", "label": "我在听。你刚说的我先记下，等有材料再核实。"},
+            {"id": "introduction", "label": f"我是{actor}。{role.get('public_chat', '你可以直接问我案子里我亲历的事。')}"},
+            {"id": "clarify", "label": "你想听我说说自己的情况，还是要问案子里的一条线索？"},
+        ]
+        choice, decision, driver = self._choose("chat", actor, entered, None, choices, "listen", text=text)
+        reply = next((option["label"] for option in choices if option["id"] == choice), choices[0]["label"])
+        self._event("conversation_reply", actor, self.player, None, (self.player, actor),
+                    {"text": reply, "classification": "observation"}, decision)
+        return self._reply(request_id, actor, text, reply, "rules" if intent_driver == "rules" else driver)
+
+    def _recall(self, request_id, actor, text, cause, driver):
+        memory = self._conversation_memory(actor)
+        if not memory:
+            return self._reply(request_id, actor, text, "这局你还没亲口告诉我这类情况。", driver)
+        # Exact quotations can address an old conversation after newer turns have filled the context window.
+        relevant = [event for event in memory if event["result"]["text"] in text]
+        remembered = (relevant or memory)[-1]
+        reply = f"你先前告诉我：「{remembered['result']['text']}」这是你当时说的，尚未核实。"
+        self._event("conversation_reply", actor, self.player, None, (self.player, actor),
+                    {"text": reply, "classification": "claim", "retrieval": cause}, remembered["id"])
+        return self._reply(request_id, actor, text, reply, driver)
+
+    def _control_task(self, request_id, actor, text, proposal, decision, driver):
+        pending = [task for task in self.state["tasks"].values() if task["requester"] == self.player
+                   and task["actor"] == actor and task["status"] == "accepted"]
+        if proposal == "modify":
+            reply = "请确认要改查的内容。你可以先取消原委托，再发送新的委托。"
+        elif len(pending) > 1:
+            reply = "还有多项委托在等候。请说清楚要取消哪一件。"
+            choices = [task for task in pending if any(alias in text for alias in
+                       [self.case["topics"][task["topic"]]["label"], *self.case["topics"][task["topic"]]["aliases"]])]
+            pending = choices
+        else:
+            reply = "目前没有可取消的待办。"
+        if proposal == "cancel" and len(pending) == 1:
+            task = pending[0]
+            reply = f"已取消「{self.case['topics'][task['topic']]['label']}」，没有执行。"
+            event = self._event("cancelled", self.player, actor, task["topic"], (self.player, actor),
+                                {"task": task["id"], "text": reply, "decision": decision}, task["cause"])
+            task.update(status="cancelled", result=event)
+            self.state["turns"][task["turn_id"]].update(reply=reply, event_id=event)
+        self.seat["pending"].pop(actor, None)
         return self._reply(request_id, actor, text, reply, driver)
 
     def _delegate(self, request_id, actor, text, topic, cause, intent_driver):
@@ -385,7 +465,7 @@ class Dialogue:
         if evidence is None or evidence_id not in self.seat["evidence"]:
             status = "unknown_evidence" if evidence is None else "not_held"
             self._event("rejected", self.player, actor, evidence_id, (), {"status": status})
-            reply = "这份材料不在本案可核查的证物中。" if evidence is None else "这份材料尚未取得，不能出示。"
+            reply = "这份材料尚未取得或不可核查，不能出示。"
             return self._reply(request_id, actor, text, reply, "rules")
         role = self.state["roles"][actor]
         if evidence_id in self._presentations(actor):
@@ -586,6 +666,7 @@ class Dialogue:
         source = event["source"]
         return {
             "id": event["id"], "kind": event["kind"], "actor": actor, "source": source,
+            "recipient": self.state["players"].get(event["recipient"], {}).get("name", event["recipient"]),
             "source_name": self._source_name(source),
             "cause": event["cause"] if event["cause"] in visible_ids else None,
             "time": event.get("time"), "text": event["result"].get("text", ""),
@@ -631,12 +712,30 @@ class Dialogue:
         # A party response never includes the owner's private parent ID.
         return {"shared": self._event_view(shared, {shared["id"]})}
 
-    def replay(self):
+    def replay(self, role=None, through=None):
         visible = self._visible()
+        if through is not None:
+            endpoint = next((i for i, event in enumerate(visible) if event["id"] == through), None)
+            if endpoint is None:
+                raise KeyError(through)
+            visible = visible[:endpoint + 1]
+        if role is not None:
+            if role not in self.case["roles"]:
+                raise KeyError(role)
+            visible = [event for event in visible if role in event["audience"] or role == event["actor"]]
         ids = {event["id"] for event in visible}
         earlier_ids = {event["id"] for event in self.state["events"][:self.seat.get("first_event", 0)]}
-        return {"events": [self._event_view(event, ids, earlier=event["id"] in earlier_ids)
-                           for event in visible]}
+        events = {event["id"]: event for event in self.state["events"]}
+        projected = []
+        for event in visible:
+            row = self._event_view(event, ids, earlier=event["id"] in earlier_ids)
+            # Only link to another visible node. No private IDs, contents, or counts leave the server.
+            parent = event["cause"]
+            while parent is not None and parent not in ids:
+                parent = events.get(parent, {}).get("cause")
+            row["cause"] = parent
+            projected.append(row)
+        return {"events": projected, "roles": list(self.case["roles"])}
 
     def assist(self, level, query=""):
         self._begin_turn()
@@ -646,14 +745,15 @@ class Dialogue:
             truth = self.case["truth"]
             timeline = "\n".join(f"{item['when']} · {item['event']}" for item in truth["timeline"])
             return {"level": level, "driver": "rules", "text": truth["explanation"] + "\n\n" + timeline}
-        if level not in ("summary", "nudge"):
+        if level not in ("summary", "nudge", "plan"):
             raise ValueError("未知的提示级别")
         events = [event for event in self._visible()
-                  if event["kind"] in ("report", "statement", "shared", "evidence_acquired")
-                  and event["result"].get("classification") in ("fact", "claim")]
+                  if event["kind"] in ("report", "statement", "shared", "evidence_acquired", "conversation",
+                                       "conversation_reply", "player_note")
+                  and event["result"].get("classification") in ("fact", "claim", "note")]
         lines = []
         for event in events[-5:]:
-            prefix = "已核查" if event["result"]["classification"] == "fact" else "待核实的说法"
+            prefix = {"fact": "已核查", "claim": "待核实的说法", "note": "玩家推测"}[event["result"]["classification"]]
             record_id = event["source"]
             record = self.case["records"].get(record_id) or self.case["evidence"].get(record_id)
             name = record["name"] if record else self.case["topics"].get(record_id, {}).get("label", "调查回报")
@@ -674,6 +774,8 @@ class Dialogue:
             *(event["source"] for event in reversed(events)),
             *self.seat["evidence"],
         ))
+        if level == "plan":
+            return self._investigation_plan(query, lines, topics)
         candidates = [{"id": key, "label": self.case["topics"][key]["hint"]}
                       for key in topics if key and self.case["topics"][key].get("hint")]
         if not candidates:
@@ -688,6 +790,37 @@ class Dialogue:
             choice, driver = candidates[0], "rules"
         self._event("hint", self.player, None, choice["id"], (self.player,), {"text": choice["label"]}, driver=driver)
         return {"level": level, "driver": self._display_driver(driver), "text": choice["label"]}
+
+    def _investigation_plan(self, query, observations, known_topics):
+        steps = {}
+        for topic_id in known_topics:
+            topic = self.case["topics"].get(topic_id)
+            if not topic or not topic.get("hint"):
+                continue
+            for key in topic["options"]:
+                action = self.case["actions"][key]
+                if action["kind"] not in {"ask", "inspect"} or any(
+                    evidence not in self.seat["evidence"] for evidence in action.get("requires", [])
+                ):
+                    continue
+                actor = action["roles"][0]
+                trust = self.state["roles"][actor]["relations"]
+                if trust.get(self.player, trust.get(PLAYER, 0)) < 0:
+                    continue
+                missing = self._missing(actor, action)
+                steps.setdefault(topic_id, {"actor": actor, "text": f"请帮我{action['label']}。", "prepare": missing})
+        if not steps:
+            return {"level": "plan", "driver": "rules", "text": "先询问相关人物或查看手头证物，再整理调查步骤。", "steps": []}
+        orders = {key: [key, *(other for other in steps if other != key)][:3] for key in steps}
+        options = [{"id": key, "label": " → ".join(steps[item]["text"] for item in items)} for key, items in orders.items()]
+        proposal, driver = self.decisions.choose("decompose", {"observations": observations, "goal": query},
+                                                 options, next(iter(steps)))
+        order = orders.get(proposal)
+        if order is None:
+            return {"level": "plan", "driver": self._display_driver(driver), "text": "请缩小调查目标后再试。", "steps": []}
+        return {"level": "plan", "driver": self._display_driver(driver),
+                "text": "选择一步填入原对话框。可修改内容，发送后才会委托。",
+                "steps": [steps[key] for key in order]}
 
     def verdict(self, suspect, motive):
         if self.seat["solved"]:
