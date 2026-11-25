@@ -75,6 +75,11 @@ def check_first_process(client, database):
     assert public_replay == [first]
     summary = client.call("assist", {"level": "summary"}, guest)
     assert "由罗钧领取" in summary["text"] and "夜航四号送审排期" not in summary["text"]
+    nudge = client.call("assist", {"level": "nudge", "query": "这条公开线索下一步怎么查？"}, guest)
+    assert nudge["driver"] == "mock" and "器具领用表" in nudge["text"]
+    assert "作案" not in nudge["text"] and "送审排期" not in nudge["text"]
+    guest_hint = next(event for event in client.call("replay", token=guest)["events"] if event["kind"] == "hint")
+    assert not any(event["id"] == guest_hint["id"] for event in client.call("replay", token=host)["events"])
     client.call("assist", {"level": "answer"}, host, status=400)
     client.call("assist", {"level": "answer"}, guest, status=400)
     assert not client.call("verdict", {"suspect": "宋屿", "motive": "掩盖虚报货重"}, host)["correct"]
