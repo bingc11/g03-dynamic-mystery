@@ -1,8 +1,9 @@
-import os
-import time
 from datetime import datetime, timezone
 from invoke_types import InvocationRequest, Actor, LLMMessage
-from settings import MODEL, MODEL_KEY, MAX_TOKENS, INFERENCE_SERVICE, API_KEY, OLLAMA_URL, GROQ_API_BASE, OPENROUTER_API_BASE, OPENAI_API_BASE
+from settings import (
+    API_KEY, DEEPSEEK_BASE_URL, GROQ_API_BASE, INFERENCE_SERVICE, MAX_TOKENS,
+    MODEL, MODEL_KEY, OLLAMA_URL, OPENAI_API_BASE, OPENAI_COMPATIBLE, OPENROUTER_API_BASE,
+)
 import json
 import anthropic
 import openai
@@ -153,10 +154,6 @@ def get_system_prompt(request: InvocationRequest):
         all_actors_list = request.all_actors if request.all_actors else []
         character_names = extract_character_names_from_story(request.global_story, all_actors_list)
         
-        # 调试输出
-        print(f"🔍 提取到的角色名称: {character_names}")
-        print(f"🔍 全局故事片段: {request.global_story[:200]}...")
-        
         # 构建角色详细信息（仅公开信息，不包含秘密和违规原则）
         character_details = []
         if request.all_actors:
@@ -196,8 +193,52 @@ def invoke_anthropic(system_prompt: str, messages: list[LLMMessage], *,
     )
     return response.content[0].text, response.usage.input_tokens, response.usage.output_tokens
 
+
+class ProviderFailure(RuntimeError):
+    """Provider error metadata safe for logs and legacy streaming responses."""
+
+    def __init__(self, category, status_code=None):
+        self.category = category
+        self.status_code = status_code
+        detail = f"（HTTP {status_code}）" if status_code is not None else ""
+        super().__init__(f"模型请求失败{detail}")
+
+
+def _deepseek_failure(error):
+    if isinstance(error, openai.APITimeoutError):
+        return ProviderFailure("timeout")
+    if isinstance(error, openai.APIConnectionError):
+        return ProviderFailure("connection_error")
+    return ProviderFailure("provider_error", getattr(error, "status_code", None))
+
+
+def _openai_client(timeout=None):
+    base_url = {
+        "deepseek": DEEPSEEK_BASE_URL,
+        "groq": GROQ_API_BASE,
+        "openrouter": OPENROUTER_API_BASE,
+        "openai": OPENAI_API_BASE,
+    }.get(INFERENCE_SERVICE)
+    if INFERENCE_SERVICE == "deepseek":
+        timeout = 12 if timeout is None else timeout
+        if not API_KEY:
+            raise ProviderFailure("unconfigured")
+    options = {"timeout": timeout, "max_retries": 0} if timeout is not None else {}
+    return openai.OpenAI(api_key=API_KEY, base_url=base_url, **options)
+
+
+def _openai_options(*, json_output=False):
+    options = {}
+    if INFERENCE_SERVICE == "deepseek":
+        options["extra_body"] = {"thinking": {"type": "disabled"}}
+    if json_output:
+        options["response_format"] = {"type": "json_object"}
+    return options
+
+
 def invoke_openai(system_prompt: str, messages: list[LLMMessage], temperature: float = 0.7, *,
-                  timeout: float | None = None, max_tokens: int | None = None):
+                  timeout: float | None = None, max_tokens: int | None = None,
+                  json_output: bool = False):
     """调用OpenAI API
     
     Args:
@@ -205,17 +246,29 @@ def invoke_openai(system_prompt: str, messages: list[LLMMessage], temperature: f
         messages: 消息列表
         temperature: 温度参数，默认0.7适合对话，质检等结构化输出建议0.1
     """
-    base_url = {'groq': GROQ_API_BASE, 'openrouter': OPENROUTER_API_BASE, 'openai': OPENAI_API_BASE}.get(INFERENCE_SERVICE)
-    options = {"timeout": timeout, "max_retries": 0} if timeout is not None else {}
-    client = openai.OpenAI(api_key=API_KEY, base_url=base_url, **options)
-    
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "system", "content": system_prompt}] + [msg.model_dump() for msg in messages],
-        max_tokens=max_tokens if max_tokens is not None else MAX_TOKENS,
-        temperature=temperature,
+    try:
+        with _openai_client(timeout) as client:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "system", "content": system_prompt}] + [msg.model_dump() for msg in messages],
+                max_tokens=max_tokens if max_tokens is not None else MAX_TOKENS,
+                temperature=temperature,
+                **_openai_options(json_output=json_output),
+            )
+    except openai.APIError as error:
+        if INFERENCE_SERVICE == "deepseek":
+            raise _deepseek_failure(error) from None
+        raise
+
+    choice = response.choices[0] if response.choices else None
+    if choice is not None and (choice.finish_reason == "content_filter" or getattr(choice.message, "refusal", None)):
+        raise ProviderFailure("model_refusal")
+    usage = response.usage
+    return (
+        choice.message.content if choice is not None else None,
+        usage.prompt_tokens if usage is not None else None,
+        usage.completion_tokens if usage is not None else None,
     )
-    return response.choices[0].message.content, response.usage.prompt_tokens, response.usage.completion_tokens
 
 def invoke_openai_stream(system_prompt: str, messages: list[LLMMessage], temperature: float = 0.7):
     """流式调用OpenAI API
@@ -225,33 +278,29 @@ def invoke_openai_stream(system_prompt: str, messages: list[LLMMessage], tempera
         messages: 消息列表
         temperature: 温度参数，默认0.7适合对话，质检等结构化输出建议0.1
     """
-    if INFERENCE_SERVICE == 'groq':
-        client = openai.OpenAI(api_key=API_KEY, base_url=GROQ_API_BASE)
-    elif INFERENCE_SERVICE == 'openrouter':
-        client = openai.OpenAI(api_key=API_KEY, base_url=OPENROUTER_API_BASE)
-    elif INFERENCE_SERVICE == 'openai':
-        client = openai.OpenAI(api_key=API_KEY, base_url=OPENAI_API_BASE)
-    else:  # Default OpenAI
-        client = openai.OpenAI(api_key=API_KEY)
-    
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "system", "content": system_prompt}] + [msg.model_dump() for msg in messages],
-        max_tokens=MAX_TOKENS,
-        temperature=temperature,
-        stream=True
-    )
-    
-    full_content = ""
-    for chunk in response:
-        if not chunk.choices or len(chunk.choices) == 0:
-            continue
-        if chunk.choices[0].delta.content is not None:
-            content = chunk.choices[0].delta.content
-            full_content += content
-            yield content
-    
-    return full_content
+    try:
+        with _openai_client() as client:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "system", "content": system_prompt}] + [msg.model_dump() for msg in messages],
+                max_tokens=MAX_TOKENS,
+                temperature=temperature,
+                stream=True,
+                **_openai_options(),
+            )
+            with response:
+                for chunk in response:
+                    if not chunk.choices:
+                        continue
+                    if chunk.choices[0].finish_reason == "content_filter":
+                        raise ProviderFailure("model_refusal")
+                    content = chunk.choices[0].delta.content
+                    if content is not None:
+                        yield content
+    except openai.APIError as error:
+        if INFERENCE_SERVICE == "deepseek":
+            raise _deepseek_failure(error) from None
+        raise
 
 def invoke_ollama(system_prompt: str, messages: list[LLMMessage], *,
                   timeout: float | None = None, max_tokens: int | None = None):
@@ -279,7 +328,7 @@ def invoke_ai(conn,
 
     if INFERENCE_SERVICE == 'anthropic':
         text_response, input_tokens, output_tokens = invoke_anthropic(system_prompt, messages)
-    elif INFERENCE_SERVICE in ['openai', 'groq', 'openrouter']:
+    elif INFERENCE_SERVICE in OPENAI_COMPATIBLE:
         text_response, input_tokens, output_tokens = invoke_openai(system_prompt, messages, temperature)
     elif INFERENCE_SERVICE == 'ollama':
         text_response, input_tokens, output_tokens = invoke_ollama(system_prompt, messages)
@@ -307,9 +356,6 @@ def invoke_ai(conn,
 
 def respond_initial(conn, turn_id: int,
                            request: InvocationRequest):
-
-    print(f"\nrequest.actor.messages {request.actor.messages}")
-
     return invoke_ai(
         conn,
         turn_id,
@@ -321,9 +367,7 @@ def respond_initial(conn, turn_id: int,
 
 def respond_initial_stream(conn, turn_id: int, request: InvocationRequest):
     """流式版本的初始响应"""
-    print(f"\nrequest.actor.messages {request.actor.messages}")
-    
-    if INFERENCE_SERVICE in ['openai', 'groq', 'openrouter']:
+    if INFERENCE_SERVICE in OPENAI_COMPATIBLE:
         full_content = ""
         for chunk in invoke_openai_stream(get_system_prompt(request), request.actor.messages, request.temperature):
             full_content += chunk

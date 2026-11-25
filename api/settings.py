@@ -1,46 +1,30 @@
 import os
-from dotenv import load_dotenv
 from pathlib import Path
+from dotenv import load_dotenv
 
-# get os variables from api/ .env file
 load_dotenv()
-
-# Get configuration from .env file
-INFERENCE_SERVICE = os.getenv('INFERENCE_SERVICE', 'anthropic')  # Default to Anthropic
-
-# Endpoint configuration
-# Groq configuration
-GROQ_API_BASE = "https://api.groq.com/openai/v1"
-
-# OpenRouter configuration
-OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
-
-# Ollama configuration
-OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
 
 BASE_DIR = Path(__file__).parent
 SCHEMA_PATH = BASE_DIR / "schema.sql"
-
-# Provide a default value if DB_CONN_URL is not set
 DB_CONN_URL = os.getenv("DB_CONN_URL")
 
-# Use a generic API_KEY environment variable
-API_KEY = os.getenv("API_KEY")
-
-# Set the inference service (anthropic, openai, groq, openrouter, ollama)
 INFERENCE_SERVICE = os.getenv("INFERENCE_SERVICE", "anthropic")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+OPENAI_COMPATIBLE = frozenset(("openai", "groq", "openrouter", "deepseek"))
+API_KEY = os.getenv("DEEPSEEK_API_KEY" if INFERENCE_SERVICE == "deepseek" else "API_KEY")
 
-# Set the model based on the inference service
 if INFERENCE_SERVICE == "anthropic":
     MODEL = os.getenv("MODEL", "claude-3-haiku-20240307")
-elif INFERENCE_SERVICE in ["openai", "groq", "openrouter"]:
+elif INFERENCE_SERVICE == "deepseek":
+    MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
+elif INFERENCE_SERVICE in OPENAI_COMPATIBLE:
     MODEL = os.getenv("MODEL", "gpt-3.5-turbo")
 elif INFERENCE_SERVICE == "ollama":
     MODEL = os.getenv("MODEL", "llama2")
 else:
     raise ValueError(f"Unknown inference service: {INFERENCE_SERVICE}")
 
-MAX_TOKENS = int(os.getenv("MAX_TOKENS", "8192"))
+MAX_TOKENS = int(os.getenv("MAX_TOKENS", "2048" if INFERENCE_SERVICE == "deepseek" else "8192"))
 
 # Increment this whenever we make changes to the prompts
 PROMPTS_VERSION = "1.0.5"

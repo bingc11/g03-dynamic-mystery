@@ -1,7 +1,7 @@
-"""Serve the full API and production React build with isolated Mock data."""
+"""Serve the full API and production React build with an isolated playthrough DB."""
 
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
@@ -13,6 +13,8 @@ import threading
 import time
 from urllib.error import URLError
 from urllib.request import urlopen
+
+from dotenv import dotenv_values
 
 from local_demo import DialogueFixture
 
@@ -41,7 +43,7 @@ def serve(handler, port):
 
 
 @contextmanager
-def serve_api(data_dir, port, fixture_port):
+def serve_api(data_dir, port, fixture_port, *, live=False):
     data_dir = Path(data_dir).resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     env = {key: os.environ[key] for key in ("PATH", "LANG", "LC_ALL", "TZ") if key in os.environ}
@@ -55,6 +57,12 @@ def serve_api(data_dir, port, fixture_port):
         NPC_DB_PATH=str(data_dir / "npc.db"),
         DATABASE_URL=f"sqlite:///{data_dir / 'game.db'}",
     )
+    if live:
+        env.pop("PYTHON_DOTENV_DISABLED")
+        env.update(INFERENCE_SERVICE="deepseek", NPC_DECISION_MODE="llm")
+        for key in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL", "DEEPSEEK_MODEL"):
+            if key in os.environ:
+                env[key] = os.environ[key]
     log_path = data_dir / "fastapi.log"
     with log_path.open("ab") as log, subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "main:app", "--app-dir", str(ROOT / "api"),
@@ -97,13 +105,19 @@ def main():
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--api-port", type=int, default=10000)
     parser.add_argument("--web-port", type=int, default=5001)
+    parser.add_argument("--live", action="store_true", help="Use the server's configured DeepSeek game runtime.")
     args = parser.parse_args()
     if not (BUILD / "index.html").is_file():
         parser.error("Run the React production build before starting this harness.")
-    with serve(DialogueFixture, 0) as fixture_port:
-        with serve_api(args.data_dir, args.api_port, fixture_port) as api_pid:
+    if args.live and not (os.environ.get("DEEPSEEK_API_KEY")
+                          or dotenv_values(ROOT / "api" / ".env").get("DEEPSEEK_API_KEY")):
+        parser.error("Set DEEPSEEK_API_KEY in the server environment or api/.env to use --live.")
+    fixture = nullcontext(None) if args.live else serve(DialogueFixture, 0)
+    with fixture as fixture_port:
+        with serve_api(args.data_dir, args.api_port, fixture_port, live=args.live) as api_pid:
             with serve(partial(ProductionReact, directory=BUILD), args.web_port):
-                print(f"Mock API PID {api_pid}: http://{LOOPBACK}:{args.api_port}", flush=True)
+                mode = "DeepSeek" if args.live else "Mock"
+                print(f"{mode} API PID {api_pid}: http://{LOOPBACK}:{args.api_port}", flush=True)
                 print(f"Production browser: http://{LOOPBACK}:{args.web_port}/library", flush=True)
                 print(f"NPC database: {args.data_dir.resolve() / 'npc.db'}", flush=True)
                 try:

@@ -2,8 +2,9 @@ import json
 from pathlib import Path
 import sys
 from threading import Event
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 API = Path(__file__).resolve().parents[1] / "api"
 sys.path.insert(0, str(API))
@@ -95,7 +96,7 @@ class DecisionTests(unittest.TestCase):
     @patch("npc_decisions._configured", return_value=True)
     @patch("npc_decisions._model_request")
     def test_model_returns_an_id_for_validation_and_obeys_call_budget(self, request, _):
-        request.return_value = '{"candidate_id":"unknown-action"}'
+        request.return_value = ('{"candidate_id":"unknown-action"}', 37, 8)
         decisions = Decisions("llm")
         visible = {"knowledge": [{"source": "record-1"}]}
         legal = [{"id": "wait", "label": "稍候"}]
@@ -104,18 +105,24 @@ class DecisionTests(unittest.TestCase):
         self.assertEqual(decisions.choose("plan", visible, legal, "wait"), ("wait", "rules"))
         self.assertEqual(request.call_count, MAX_MODEL_CALLS)
         self.assertEqual(json.loads(request.call_args.args[1]), {"view": visible, "candidates": legal})
+        self.assertEqual(decisions.runtime["outcomes"], {"invalid_candidate": MAX_MODEL_CALLS, "budget_exhausted": 1})
+        self.assertNotIn("unknown-action", json.dumps(decisions.runtime))
 
     @patch("npc_decisions._configured", return_value=True)
     @patch("npc_decisions._model_request")
     def test_model_schema_and_outages_fall_back_to_rules(self, request, _):
         request.side_effect = [
-            '{"candidate_id":"wait","reply":"未验证的结果"}',
-            '{"candidate_id":3}',
+            ('{"candidate_id":"wait","reply":"未验证的结果"}', 20, 10),
+            ('{"candidate_id":3}', 20, 5),
             ConnectionError,
         ]
         decisions = Decisions("llm")
         for _ in range(3):
             self.assertEqual(decisions.choose("plan", {}, [{"id": "wait"}], "wait"), ("wait", "rules"))
+        self.assertEqual(decisions.runtime["retries"], 1)
+        self.assertEqual(decisions.runtime["fallbacks"], 3)
+        self.assertEqual(decisions.runtime["outcomes"], {"malformed": 2, "connection_error": 1, "budget_exhausted": 1})
+        self.assertGreater(decisions.runtime["input_budget_used"], decisions.runtime["input_tokens"])
 
     @patch("npc_decisions._configured", return_value=True)
     @patch("npc_decisions.MODEL_TIMEOUT", 0.01)
@@ -124,9 +131,121 @@ class DecisionTests(unittest.TestCase):
         release_provider = Event()
         request.side_effect = lambda *args: release_provider.wait(timeout=1)
         try:
-            self.assertEqual(Decisions("llm").choose("plan", {}, [{"id": "wait"}], "wait"), ("wait", "rules"))
+            decisions = Decisions("llm")
+            self.assertEqual(decisions.choose("plan", {}, [{"id": "wait"}], "wait"), ("wait", "rules"))
+            self.assertEqual(decisions.runtime["outcomes"], {"timeout": 1})
+            self.assertEqual(decisions.runtime["retries"], 0)
         finally:
             release_provider.set()
+
+    @patch("npc_decisions._configured", return_value=True)
+    @patch("npc_decisions._model_request")
+    def test_json_retry_reports_usage_and_keeps_only_a_safe_request_digest(self, request, _):
+        request.side_effect = [
+            ("    ", 23, 5),
+            ('{"candidate_id":"inspect"}', 22, 8),
+        ]
+        state = {}
+        decisions = Decisions("llm", runtime=state)
+        candidates = [{"id": "wait"}, {"id": "inspect"}]
+        self.assertEqual(decisions.choose("plan", {"secret": "private sample"}, candidates, "wait"), ("inspect", "llm"))
+        self.assertEqual((state["attempts"], state["retries"], state["fallbacks"]), (2, 1, 0))
+        self.assertEqual((state["input_tokens"], state["output_tokens"]), (45, 13))
+        rejected, selected = state["audit"]
+        self.assertEqual((rejected["status"], selected["status"]), ("malformed", "ok"))
+        self.assertEqual(rejected["request_sha256"], selected["request_sha256"])
+        self.assertEqual(len(selected["request_sha256"]), 64)
+        self.assertNotIn("private sample", json.dumps(state))
+
+    @patch("npc_decisions._configured", return_value=True)
+    @patch("npc_decisions.MAX_MODEL_RUN_CALLS", 2)
+    @patch("npc_decisions._model_request", return_value=('{"candidate_id":"wait"}', 19, 7))
+    def test_playthrough_budget_survives_separate_interactions(self, request, _):
+        runtime = {}
+        candidates = [{"id": "wait"}]
+        for _ in range(2):
+            self.assertEqual(
+                Decisions("llm", runtime=runtime).choose("plan", {}, candidates, "wait"), ("wait", "llm")
+            )
+            runtime = json.loads(json.dumps(runtime))
+        self.assertEqual(Decisions("llm", runtime=runtime).choose("plan", {}, candidates, "wait"), ("wait", "rules"))
+        self.assertEqual(request.call_count, 2)
+        self.assertEqual(runtime["outcomes"], {"ok": 2, "budget_exhausted": 1})
+
+    @patch("npc_decisions._configured", return_value=True)
+    @patch("npc_decisions.MAX_MODEL_RUN_OUTPUT_TOKENS", 1)
+    @patch("npc_decisions._model_request")
+    def test_token_budget_rejects_a_call_before_the_provider(self, request, _):
+        decisions = Decisions("llm")
+        self.assertEqual(decisions.choose("plan", {}, [{"id": "wait"}], "wait"), ("wait", "rules"))
+        request.assert_not_called()
+
+
+class DeepSeekAdapterTests(unittest.TestCase):
+    @patch("llm_service.INFERENCE_SERVICE", "deepseek")
+    @patch("llm_service.DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+    @patch("llm_service.MODEL", "deepseek-flash")
+    @patch("llm_service.API_KEY", "fixture-only")
+    @patch("llm_service.openai.OpenAI")
+    def test_structured_and_streaming_runtime_use_official_deepseek_settings(self, factory):
+        from invoke_types import LLMMessage
+        from llm_service import invoke_openai, invoke_openai_stream
+
+        create = factory.return_value.__enter__.return_value.chat.completions.create
+        create.return_value = SimpleNamespace(
+            choices=[SimpleNamespace(
+                finish_reason="stop",
+                message=SimpleNamespace(content='{"candidate_id":"wait"}', reasoning_content="private", refusal=None),
+            )],
+            usage=SimpleNamespace(prompt_tokens=20, completion_tokens=6),
+        )
+        messages = [LLMMessage(role="user", content="fixture")]
+        self.assertEqual(
+            invoke_openai("Return JSON", messages, timeout=4, max_tokens=96, json_output=True),
+            ('{"candidate_id":"wait"}', 20, 6),
+        )
+        self.assertEqual(factory.call_args.kwargs["base_url"], "https://api.deepseek.com")
+        self.assertEqual(factory.call_args.kwargs["timeout"], 4)
+        self.assertEqual(factory.call_args.kwargs["max_retries"], 0)
+        self.assertEqual(create.call_args.kwargs["model"], "deepseek-flash")
+        self.assertEqual(create.call_args.kwargs["response_format"], {"type": "json_object"})
+        self.assertEqual(create.call_args.kwargs["extra_body"], {"thinking": {"type": "disabled"}})
+
+        stream = MagicMock()
+        stream.__iter__.return_value = iter([
+            SimpleNamespace(choices=[SimpleNamespace(
+                finish_reason=None, delta=SimpleNamespace(content=None, reasoning_content="private"),
+            )]),
+            SimpleNamespace(choices=[SimpleNamespace(
+                finish_reason="stop", delta=SimpleNamespace(content="可见答复"),
+            )]),
+            SimpleNamespace(choices=[]),
+        ])
+        create.return_value = stream
+        self.assertEqual(list(invoke_openai_stream("Respond to player", messages)), ["可见答复"])
+        self.assertTrue(create.call_args.kwargs["stream"])
+        self.assertNotIn("response_format", create.call_args.kwargs)
+        self.assertEqual(create.call_args.kwargs["extra_body"], {"thinking": {"type": "disabled"}})
+
+    @patch("llm_service.INFERENCE_SERVICE", "deepseek")
+    @patch("llm_service.API_KEY", "fixture-only")
+    @patch("llm_service.openai.OpenAI")
+    def test_provider_exception_exposes_status_without_raw_body(self, factory):
+        import openai
+        from llm_service import ProviderFailure, invoke_openai
+
+        class AuthenticationFailure(openai.APIError):
+            status_code = 401
+
+            def __init__(self):
+                Exception.__init__(self, "provider echoed credential fixture-only")
+
+        create = factory.return_value.__enter__.return_value.chat.completions.create
+        create.side_effect = AuthenticationFailure
+        with self.assertRaises(ProviderFailure) as caught:
+            invoke_openai("Return JSON", [], timeout=4, max_tokens=96, json_output=True)
+        self.assertEqual(caught.exception.status_code, 401)
+        self.assertNotIn("fixture-only", str(caught.exception))
 
 
 if __name__ == "__main__":
