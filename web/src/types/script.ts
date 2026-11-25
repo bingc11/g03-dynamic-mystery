@@ -1,3 +1,5 @@
+import { harborBlackout } from '../data/harborBlackout';
+
 // 剧本相关的类型定义
 
 export interface Character {
@@ -639,5 +641,6 @@ export const getExampleScripts = (): Script[] => [
       partnerRole: '警官克洛伊',
       killerRole: '业余拉里'
     }
-  }
+  },
+  harborBlackout
 ];

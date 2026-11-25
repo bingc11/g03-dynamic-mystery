@@ -1,39 +1,26 @@
 # G03 动态悬疑调查游戏
 
-基于 [ScottishFold007 / ai-murder-mystery](https://github.com/ScottishFold007/ai-murder-mystery/tree/3afe5bccb989ec1b8964c0ff851e99c5484c80fe) 的非商业教学改作。原作者提供 React、Mantine 和 FastAPI 调查游戏。本项目探索如何让原有角色根据自己获知的线索采取可核验的行动。
+基于 [ScottishFold007 / ai-murder-mystery](https://github.com/ScottishFold007/ai-murder-mystery/tree/3afe5bccb989ec1b8964c0ff851e99c5484c80fe) 的非商业教学改作。原作者提供 React、Mantine 和 FastAPI 调查游戏。
 
-**阶段一可以复演一个真实改变下一步调查的行动。** 在《深宫血色：玉玺谜云》中，玩家给太平公主看秘录遗失记录。公主可以私下联系御史；玩家再去询问，才会听到御史对这次联系的陈述。改给另一人看，御史收到的信息随之改变。角色与游戏规则均在本地运行。[演示步骤、源码地图和验证记录](docs/PHASE1.md)
-
-## 一分钟看懂改动
-
-![玩家先后询问御史同一件事，第二次得到了可追问来源的证言](docs/evidence/palace-investigation.png)
-
-这张图截自本机浏览器。左侧可选角色，中间是两次询问与回复，右侧供玩家记录。三种选择的因果记录可直接对照。[逐事件记录](docs/evidence/paths.jsonl)
-
-在仓库根目录执行以下命令。复演和规则测试仅需 Python 3.12 标准库。
-
-```sh
-python -X utf8 tools/replay.py
-python -m unittest discover -s tests -v
-```
+在原人物对话框，你可以请《深宫血色：玉玺谜云》的太平公主向御史大夫核对秘录，也可以请《雾港停电案》的宋屿问门卫昨晚谁进过仓库。人物依权限查问或核对记录，回报会标注所据的说法或材料。你可以亲自找当事人追问，再决定怎么结案。
 
 ## 打开原游戏
 
-使用 Python 3.12 的虚拟环境和 Node 22。在仓库根目录安装后端依赖并开启本地模式：
+使用 Python 3.12 虚拟环境以及 Node 22 或 24。在仓库根目录安装依赖并构建前端。
 
 ```sh
 python -m pip install -r api/requirements.txt
-python tools/local_demo.py
-```
-
-在第二个终端执行：
-
-```sh
 cd web
 npm ci --legacy-peer-deps
-npm run start:local
+npm run build
+cd ..
+python tools/round2_runtime.py --data-dir /tmp/g03-round2
 ```
 
-浏览器打开 http://127.0.0.1:5001 。普通对话清楚标注为本地模拟；“离线行动”由角色知识和裁判决定。原项目的真实模型配置保留，启动此演示不需要 API key。建议在同一页中切换受访者；刷新页面会开启新的行动会话。
+打开 http://127.0.0.1:5001/library，进入《雾港停电案》。在宋屿的原对话框发送“帮我去问问门卫昨晚谁进过仓库”。等待回报后，切换到阮岑问“是谁来问过西门出入？”。
 
-基底保留原许可与署名，原项目追溯至 Paul Scotti 和 Will Beddow 的 AI Murder Mystery Hackathon。上游的运行环境配置与数据库不进入此公开仓库。[原作使用说明](https://github.com/ScottishFold007/ai-murder-mystery/blob/3afe5bccb989ec1b8964c0ff851e99c5484c80fe/README.md) · [许可全文](LICENSE)
+演示用 Mock，无需模型密钥。刷新当前页面可恢复已受理任务和行动回报，从剧本库重开会创建一局新委托会话。普通闲聊按照原游戏保存方式运行。要切换到已配置的项目模型，运行完整 FastAPI 应用并使用 `NPC_DECISION_MODE=auto`（默认）。`mock` 可重复验收，`rules` 显式禁用模型。
+
+[本轮验收与复现](ACCEPTANCE.md) · [本轮状态和源码](STATUS.md) · [第一轮历史记录](docs/PHASE1.md)
+
+基底保留原许可与署名，原项目追溯至 Paul Scotti 和 Will Beddow 的 AI Murder Mystery Hackathon。[原作使用说明](https://github.com/ScottishFold007/ai-murder-mystery/blob/3afe5bccb989ec1b8964c0ff851e99c5484c80fe/README.md) · [许可全文](LICENSE)

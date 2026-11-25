@@ -32,6 +32,7 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [killerAnswer, setKillerAnswer] = useState<string>('');
   const [motiveOptions, setMotiveOptions] = useState<string[]>([]);
+  const [motiveIncorrect, setMotiveIncorrect] = useState(false);
   const sessionId = useSessionContext();
 
   // 只有明确传入了questions且script为空时，才使用旧逻辑
@@ -47,6 +48,11 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
   const killer = script?.characters.find(c => c.isKiller);
   const allCharacters = script?.characters || [];
   const characterNames = allCharacters.map(c => c.name);
+  const candidateMotive = questions?.[1];
+  const authoredMotive = killer && questions?.[0]?.correctAnswer === killer.name
+    && candidateMotive?.correctAnswer && candidateMotive.choices.includes(candidateMotive.correctAnswer)
+    ? candidateMotive
+    : undefined;
 
   // 生成动机选项的函数
   const generateMotiveOptions = async (killerName: string) => {
@@ -124,8 +130,12 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
     
     // 检查是否答对凶手
     if (selectedChoice === killer.name) {
-      // 答对了，进入动机选择阶段
-      generateMotiveOptions(selectedChoice);
+      if (authoredMotive) {
+        setMotiveOptions(authoredMotive.choices);
+        setStage('motive');
+      } else {
+        generateMotiveOptions(selectedChoice);
+      }
     } else {
       // 答错了，显示"冤枉好人"
       setStage('failed');
@@ -136,8 +146,12 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
 
   const handleMotiveSelection = () => {
     if (!selectedChoice) return;
-    
-    // 检查动机是否正确（这里我们简化逻辑，任何选择都算对）
+
+    if (authoredMotive && selectedChoice !== authoredMotive.correctAnswer) {
+      setMotiveIncorrect(true);
+      return;
+    }
+
     const finalAnswers = [killerAnswer, selectedChoice];
     onBackToGame(finalAnswers);
   };
@@ -161,6 +175,7 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
   };
 
   const handleChoiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMotiveIncorrect(false);
     setSelectedChoice(event.currentTarget.value);
   };
 
@@ -408,6 +423,9 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
           <Text style={{ textAlign: 'center', marginBottom: '20px', color: '#B8B8B8' }}>
             请选择最符合剧情的作案动机
           </Text>
+          {motiveIncorrect && (
+            <Text role="alert" c="red" mb="md">这个动机和已知材料对不上，可以再想一想，或返回调查。</Text>
+          )}
           <Stack>
             {motiveOptions.map((motive, index) => (
               <Radio
