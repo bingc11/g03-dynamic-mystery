@@ -19,6 +19,7 @@ MAX_MODEL_RUN_INPUT_TOKENS = 200_000
 MAX_MODEL_RUN_OUTPUT_TOKENS = 12_000
 MAX_MODEL_AUDIT = 512
 MODEL_WORKERS = 4
+DECISION_PROMPT_VERSION = "g03-issue5-v2"
 _workers = ThreadPoolExecutor(max_workers=MODEL_WORKERS, thread_name_prefix="npc-model")
 _slots = BoundedSemaphore(MODEL_WORKERS)
 
@@ -45,7 +46,7 @@ ASSIGN = (
     "你来", "烦请", "敬请", "please", "will you", "would you", "could you",
 )
 INQUIRY = (
-    "你知道", "知不知道", "有没有", "见过", "听说", "什么", "哪", "谁", "怎样", "如何",
+    "你知道", "知不知道", "有没有", "见过", "亲眼", "几点", "听说", "什么", "哪", "谁", "怎样", "如何",
     "怎么", "何时", "是否", "吗", "可曾", "来过", "消息", "情况", "线索",
     "说说", "讲讲", "告诉我", "tell me", "what", "who", "which",
     "when", "where", "why", "how", "do you", "did you", "have you",
@@ -94,6 +95,10 @@ SYNONYMS = {
 _WORDS = re.compile(r"[a-z0-9]+|[\u3400-\u9fff]+")
 _CHINESE = re.compile(r"[\u3400-\u9fff]")
 _REPEATED_ACTION = re.compile(r"([查翻问对找看])一?\1")
+TASK_CANCELLATION = ("取消", "不用去", "不用查", "不用核对", "先别", "别再", "别去", "别查", "不要查",
+                     "不必查", "不必去", "不要联系", "撤回委托", "停下", "cancel", "don't", "no need to", "stop")
+TASK_REVISION = ("改成", "改查", "改为", "换成", "修改委托", "换个目标", "instead", "change the task")
+MEMORY_QUERY = ("还记得", "记不记得", "我之前说", "我跟你说过", "我告诉过你", "remember what i")
 
 
 def _normalize(text: str) -> str:
@@ -150,9 +155,36 @@ def asks_origin(text: str) -> bool:
     return _has(text, ORIGIN) or (_has(text, ("谁", "什么人", "who")) and _has(text, INQUIRY_ACTOR))
 
 
+def task_control(text: str) -> str | None:
+    text = _normalize(text)
+    revision = _has(text, TASK_REVISION)
+    if _has(text, TASK_CANCELLATION) or revision:
+        return "modify" if revision else "cancel"
+    return None
+
+
+def has_multiple_targets(text, topics):
+    clauses = re.split(r"同时|以及|并且|再去|\balso\b|\bas well as\b", _normalize(text))
+    if len(clauses) < 2:
+        return False
+    matches = set()
+    for clause in clauses:
+        normalized = _topic_text(clause)
+        features = _features(normalized)
+        possible = [topic["id"] for topic in topics
+                    if _topic_score(normalized, features, [topic["label"], *topic["aliases"]]) >= 2]
+        if len(possible) == 1:
+            matches.add(possible[0])
+    return len(matches) > 1
+
+
 def classify(view: dict) -> str:
     """Offline semantic matching for a new utterance or a clarification response."""
     text = _normalize(view["text"])
+    if control := task_control(text):
+        return control
+    if _has(text, MEMORY_QUERY):
+        return "recall"
     topics = view.get("topics", ())
     if not topics:
         return "chat"
@@ -170,9 +202,12 @@ def classify(view: dict) -> str:
             delegation
             or (proxy and (action or contact or _has(text, ("查", "问", "找"))))
             or (action and (assignment or bare_command))
+            or (assignment and contact and not progress)
             or (assignment and _has(text, ("请你查", "请你问", "请你找", "能不能查", "能否查")))
         )
     delegation = delegation and not _has(text, ("不必", "不用", "别去", "别查", "don't", "no need to"))
+    if progress and _has(text, ("先前", "之前", "刚托", "刚才托", "earlier", "previously")):
+        delegation = False
     origin = asks_origin(text)
 
     topic_text = _topic_text(text)
@@ -183,7 +218,7 @@ def classify(view: dict) -> str:
         reverse=True,
     )
     best, topic_id = scores[0]
-    ambiguous = len(scores) > 1 and best - scores[1][0] < 0.12
+    ambiguous = len(scores) > 1 and best - scores[1][0] < 0.06
     if best < 0.34 or ambiguous:
         topic_id = None
 
@@ -219,22 +254,44 @@ def classify(view: dict) -> str:
     return "chat"
 
 
+def _resolve_read_intent(identifier, offline):
+    # Preserve the model's subject. Among read-only actions, explicit grammar distinguishes
+    # who/anyone and results/already known information. It never upgrades a guess to a task.
+    read_kinds = {"inquire", "followup", "receipt", "origin"}
+    kind, _, topic = identifier.partition(":")
+    offline_kind, _, offline_topic = offline.partition(":")
+    if topic and topic == offline_topic and kind in read_kinds and offline_kind in read_kinds - {"inquire"}:
+        return offline
+    return identifier
+
+
 _PURPOSES = {
     "intent": (
         "理解自然语言及前一轮澄清。只有当调查者要求角色替其联系他人或核查对象时才选 delegate。"
         "请求帮忙比对、查问或核查材料属于新委托，即使角色已经知道一些相关说法。"
-        "可用主题别名和该角色的行动标签理解材料指代，能对应唯一主题时无需追问。"
+        "如果证词、档案等复数名称符合唯一公开主题或当前角色的行动标签，直接使用该主题；没有唯一对应才追问。"
         "直接询问角色看到了什么、知道些什么或材料写了什么时选 inquire。"
-        "询问委托进展或调查结果时选 followup，询问别人是否来询问、联系或提起此事时选 receipt。"
+        "询问委托进展或调查结果时选 followup，提到先前托付时不能当作新委托。询问别人是否来联系时选 receipt。"
+        "询问具体是谁来联系、谁告知了消息或来源出处时选 origin；问是否有人来过才选 receipt。"
         "“核对的结果是什么”询问既有结果。要求核对后回报是新委托。"
         "追问来源选 origin，委托未说明对象时选 clarify。"
+        "只问是否记得玩家亲自说过的内容选 recall。撤回、不要执行、停止原委托选 cancel，要求更换已提出任务的内容选 modify。"
+        "不要把否定或修改当成新委托。两个同样合理的目标需要澄清。"
         "一般对话选 chat。视图中的 topics 只列出公开可询问的主题。"
     ),
     "plan": "根据角色当前目标、关系、所知信息和行动收益提议下一步。可接受、拒绝、等待或提议其他合法行动。",
     "reaction": "根据角色自己知道的证据、目标和关系决定如何回应事件。听来的说法没有经过核证。",
     "response": "根据角色所知和关系决定如何回应另一名角色。考虑采信、质疑、隐瞒或拒绝。",
     "assist": "按调查者已知观察和未核实矛盾排列提示的优先级。只选一个已有提示 ID，不提供新事实、台词或指控。",
+    "decompose": "从给定的调查步骤组合中选择最匹配玩家的目标、仍缺的条件及核查顺序。步骤要帮助取证，避免直接指控。",
+    "chat": "选择适合角色与眼下谈话的答复。玩家说过的内容是带来源的说法，不能当成已经核实的事实。",
 }
+
+
+class ModelRequired(Exception):
+    def __init__(self, status: str):
+        super().__init__("本次要求真实模型，模型决策未通过。")
+        self.status = status
 
 
 def _configured(service: str, api_key: str | None) -> bool:
@@ -300,6 +357,7 @@ class Decisions:
             self.runtime["fallbacks"] += 1
         audit = self.runtime["audit"]
         audit.append({"at": round(time.time(), 3), "purpose": purpose, "driver": driver,
+                      "prompt_version": DECISION_PROMPT_VERSION,
                       "status": status, "fallback": fallback, **summary})
         if len(audit) > MAX_MODEL_AUDIT:
             del audit[:-MAX_MODEL_AUDIT]
@@ -318,7 +376,7 @@ class Decisions:
         if self.mode == "mock":
             self._audit(purpose, "mock", "mock", candidate_id=fallback)
             return fallback, "mock"
-        if self.mode not in {"auto", "llm"}:
+        if self.mode not in {"auto", "llm", "llm-required"}:
             self._audit(purpose, "rules", "rules_disabled", candidate_id=fallback)
             return fallback, "rules"
 
@@ -326,6 +384,9 @@ class Decisions:
 
         provider = {"provider": INFERENCE_SERVICE, "model": MODEL}
         if not _configured(INFERENCE_SERVICE, API_KEY):
+            if self.mode == "llm-required":
+                self._audit(purpose, None, "unconfigured", **provider)
+                raise ModelRequired("unconfigured")
             driver = "mock" if self.mode == "auto" else "rules"
             self._audit(purpose, driver, "unconfigured", fallback=driver == "rules", candidate_id=fallback, **provider)
             return fallback, driver
@@ -337,9 +398,15 @@ class Decisions:
         )
         payload = json.dumps({"view": view, "candidates": candidates}, ensure_ascii=False)
         if len(payload.encode()) > MAX_MODEL_INPUT:
-            self._audit(purpose, "rules", "payload_limit", fallback=True, candidate_id=fallback, **provider)
-            return fallback, "rules"
+            return self._unavailable(purpose, "payload_limit", fallback, provider)
         return self._choose_model(purpose, system, payload, candidates, fallback, provider)
+
+    def _unavailable(self, purpose, status, fallback, provider):
+        if self.mode == "llm-required":
+            self._audit(purpose, None, status, **provider)
+            raise ModelRequired(status)
+        self._audit(purpose, "rules", status, fallback=True, candidate_id=fallback, **provider)
+        return fallback, "rules"
 
     def _choose_model(self, purpose, system, payload, candidates, fallback, provider):
         data = (system + "\n" + payload).encode()
@@ -350,18 +417,15 @@ class Decisions:
         deadline = time.monotonic() + MODEL_TIMEOUT
         for retry in (False, True):
             if not self._fits_budget(estimated_input):
-                self._audit(purpose, "rules", "budget_exhausted", fallback=True, candidate_id=fallback, **provider)
-                return fallback, "rules"
+                return self._unavailable(purpose, "budget_exhausted", fallback, provider)
             started = time.monotonic()
             if not _slots.acquire(blocking=False):
-                self._audit(purpose, "rules", "busy", fallback=True, candidate_id=fallback, **provider)
-                return fallback, "rules"
+                return self._unavailable(purpose, "busy", fallback, provider)
             try:
                 future = _workers.submit(_model_request, system, payload, max(0.001, deadline - started))
             except RuntimeError:
                 _slots.release()
-                self._audit(purpose, "rules", "busy", fallback=True, candidate_id=fallback, **provider)
-                return fallback, "rules"
+                return self._unavailable(purpose, "busy", fallback, provider)
             future.add_done_callback(lambda _: _slots.release())
             self.model_calls += 1
             self.runtime["attempts"] += 1
@@ -389,12 +453,17 @@ class Decisions:
             self.runtime["latency_ms"] += latency
             retrying = (retryable and not retry and deadline - time.monotonic() >= 0.25
                         and self._fits_budget(estimated_input))
-            driver = "llm" if identifier is not None or retrying else "rules"
+            resolved = _resolve_read_intent(identifier, fallback) if purpose == "intent" and identifier in legal else identifier
+            strict_failure = self.mode == "llm-required" and status != "ok" and not retrying
+            driver = None if strict_failure else ("llm" if identifier is not None or retrying else "rules")
             self._audit(
                 purpose, driver, status, fallback=driver == "rules",
                 attempt=self.runtime["attempts"], retry=retry, request_sha256=fingerprint,
                 input_tokens=input_tokens, output_tokens=output_tokens, latency_ms=latency,
                 http_status=http_status, candidate_id=identifier if identifier in legal else None, **provider,
+                resolved_candidate_id=resolved if identifier in legal else None,
             )
             if not retrying:
-                return (identifier, "llm") if identifier is not None else (fallback, "rules")
+                if strict_failure:
+                    raise ModelRequired(status)
+                return (resolved, "llm") if identifier is not None else (fallback, "rules")

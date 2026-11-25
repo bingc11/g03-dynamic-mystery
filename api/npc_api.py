@@ -1,5 +1,7 @@
 """Player-facing NPC routes. Internal events and role memories stay in the store."""
 from contextlib import contextmanager
+from copy import deepcopy
+import os
 from typing import Literal
 from uuid import uuid4
 
@@ -7,6 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from npc_dialogue import Dialogue, load_case, new_state
+from npc_decisions import ModelRequired
 from npc_store import (
     HOST_PLAYER, BusyRun, FullRun, MissingRun, Receipt, Seat, SeatInUse, digest, encode, scoped_request_id, store,
 )
@@ -35,6 +38,7 @@ class Say(PlayerRequest):
     actor: str = Field(min_length=1, max_length=100)
     text: str = Field(min_length=1, max_length=4000)
     evidence: str | None = Field(default=None, max_length=128)
+    note: bool = False
 
 
 class Resume(PlayerRequest):
@@ -46,7 +50,7 @@ class Share(PlayerRequest):
 
 
 class Assist(PlayerRequest):
-    level: Literal["summary", "nudge", "answer"]
+    level: Literal["summary", "nudge", "answer", "plan"]
     query: str = Field(default="", max_length=1000)
 
 
@@ -97,6 +101,21 @@ def player_operation():
         raise HTTPException(400, str(exc)) from exc
 
 
+@contextmanager
+def model_operation(run):
+    original = deepcopy(run.snapshot) if os.getenv("NPC_DECISION_MODE", "auto").lower() == "llm-required" else None
+    try:
+        yield
+    except ModelRequired as exc:
+        if original is not None:
+            # Keep the model budget and diagnostics, roll back all gameplay changes and receipts.
+            original["model"] = run.snapshot.get("model", {})
+            run.snapshot.clear()
+            run.snapshot.update(original)
+            run.save()
+        raise HTTPException(503, {"message": str(exc), "model_error": exc.status}) from exc
+
+
 def read_game(response: Response, seat: Seat):
     try:
         case_id, snapshot = store().read(seat.run_hash)
@@ -115,7 +134,8 @@ def identical_request(receipt: Receipt, input_digest: str):
 @router.get("/cases/{case_id}")
 def case_metadata(case_id: str):
     case = get_case(case_id)
-    metadata = {"actors": list(case["roles"]), "evidence": list(case["evidence"])}
+    metadata = {"actors": list(case["roles"]),
+                "evidence": [key for key, item in case["evidence"].items() if item.get("initial", True)]}
     if "title" in case:
         metadata["title"] = case["title"]
     if "verdict" in case:
@@ -173,7 +193,12 @@ def join(request: Join, response: Response):
 @router.post("/dialogue")
 def dialogue(request: Say, seat: Seat = Depends(seat_access)):
     db = store()
-    input_digest = digest(encode([request.actor, request.text, request.evidence]))
+    fields = [request.actor, request.text, request.evidence]
+    if request.note:
+        if request.evidence:
+            raise HTTPException(400, "笔记与出示证物请分开发送")
+        fields.append(True)
+    input_digest = digest(encode(fields))
     previous = db.receipt(seat.run_hash, request_id=request.request_id, player=seat.player)
     if previous:
         return identical_request(previous, input_digest)
@@ -186,7 +211,8 @@ def dialogue(request: Say, seat: Seat = Depends(seat_access)):
             raise HTTPException(404, "案件中没有这个调查对象")
         game = Dialogue(case, run.snapshot, player=seat.player)
         request_key = scoped_request_id(seat.player, request.request_id)
-        result = game.submit(request_key, request.actor, request.text, request.evidence)
+        with model_operation(run):
+            result = game.submit(request_key, request.actor, request.text, request.evidence, note=request.note)
         run.save(Receipt(request_key, input_digest, result, seat.player))
         return result
 
@@ -207,7 +233,8 @@ def resume(request: Resume, seat: Seat = Depends(seat_access)):
         if receipt.result["task"]["status"] != "accepted":
             return receipt.result
         game = Dialogue(get_case(run.case_id), run.snapshot, player=seat.player)
-        result = game.resume(request.task_id)
+        with model_operation(run):
+            result = game.resume(request.task_id)
         run.save(Receipt(receipt.request_id, receipt.input_digest, result, seat.player))
         return result
 
@@ -228,16 +255,18 @@ def share(request: Share, seat: Seat = Depends(seat_access)):
 
 
 @router.get("/replay")
-def replay(response: Response, seat: Seat = Depends(seat_access)):
+def replay(response: Response, seat: Seat = Depends(seat_access), role: str | None = None, through: str | None = None):
     _, game = read_game(response, seat)
-    return game.replay()
+    with player_operation():
+        return game.replay(role, through)
 
 
 @router.post("/assist")
 def assist(request: Assist, seat: Seat = Depends(seat_access)):
     with claim_run(seat.run_hash) as run, player_operation():
         game = Dialogue(get_case(run.case_id), run.snapshot, player=seat.player)
-        result = game.assist(request.level, request.query)
+        with model_operation(run):
+            result = game.assist(request.level, request.query)
         run.save()
         return result
 

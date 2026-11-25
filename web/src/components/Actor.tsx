@@ -320,6 +320,12 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const { currentScript } = useScriptContext();
   const npcAction = useNpcActions();
   const [loading, setLoading] = useState(false);
+  React.useEffect(() => {
+    if (!loading && npcAction?.draft?.actor === actor.name) {
+      setCurrMessage(npcAction.draft.text);
+      npcAction.setDraft(null);
+    }
+  }, [actor.name, loading, npcAction]);
   const [cancelStream, setCancelStream] = useState<(() => void) | null>(null);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
@@ -339,11 +345,11 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const detectiveName = currentScript?.characters?.find(char => char.isPlayer)?.name;
   const victimName = currentScript?.characters?.find(char => char.isVictim)?.name;
 
-  const sendFromDialogue = async (message: LLMMessage, evidenceId?: string) => {
+  const sendFromDialogue = async (message: LLMMessage, evidenceId?: string, note?: boolean) => {
     setLoading(true);
     setCancelStream(null);
     const outcome = !postGame && npcAction
-      ? await npcAction.dispatch(actor, message.content, evidenceId)
+      ? await npcAction.dispatch(actor, message.content, evidenceId, note)
       : 'legacy';
     const current = latestActors.current[actor.id];
     if (outcome === 'handled' || current?.name !== actor.name) {
@@ -430,8 +436,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
     // 立即关闭笔记选择器，提供即时反馈
     setShowNoteSelector(false);
 
-    const cancel = sendChatStream([...actor.messages, noteMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors, npcAction?.managed);
-    setCancelStream(() => cancel);
+    void sendFromDialogue(noteMessage, undefined, true);
   };
 
   // 生成背景图片

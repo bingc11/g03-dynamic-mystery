@@ -1,0 +1,33 @@
+{
+  "id": "signal_fixture",
+  "title": "信标校验（测试案件）",
+  "verdict": {"suspects": ["记录员", "值班员"], "motives": ["掩盖漏检", "节省电量"]},
+  "truth": {
+    "suspect": "值班员", "motive": "掩盖漏检",
+    "explanation": "签入表记录了操作员，校验纸记录了漏检。",
+    "timeline": [{"when": "测试前", "event": "值班员漏检后切断测试信标。"}],
+    "clues": ["witness", "check_sheet"]
+  },
+  "roles": {
+    "记录员": {"identity": "测试室资料员", "motivation": "核对台账", "goal": "找一份独立记录", "interests": ["signal", "calibration"], "relations": {"$player": 1, "值班员": 1}, "knowledge": [], "disclosure": [], "verify": ["witness"]},
+    "值班员": {"identity": "测试室值班员", "motivation": "按签到卡答复", "goal": "只说自己见过的事", "interests": ["signal"], "relations": {"$player": 0, "记录员": 2}, "knowledge": ["witness"], "disclosure": ["witness"], "verify": []}
+  },
+  "evidence": {
+    "ticket": {"name": "测试签入表", "text": "值班员在北侧信标签到。", "topic": "signal"},
+    "sheet_copy": {"name": "校验纸副本", "text": "计划中 14 时的校验缺少签字。", "topic": "calibration", "initial": false}
+  },
+  "records": {
+    "witness": {"name": "签到时的观察", "text": "我在北侧面板签到时，信标已经熄灭了。", "kind": "claim", "topic": "signal"},
+    "check_sheet": {"name": "信标校验纸", "text": "北侧面板在值班员签到后被切断，之前的校验栏为空。", "kind": "fact", "topic": "calibration"}
+  },
+  "topics": {
+    "signal": {"label": "北侧信标熄灭", "aliases": ["信标", "签到", "灯灭"], "options": ["ask_duty"], "hint": "请记录员向值班员询问信标什么时候熄灭。"},
+    "calibration": {"label": "信标校验纸", "aliases": ["校验纸", "校验缺签"], "options": ["inspect_sheet"], "hint": "给记录员看测试签入表，再核对信标校验纸。"}
+  },
+  "actions": {
+    "ask_duty": {"label": "向值班员询问信标熄灭的经过", "kind": "ask", "roles": ["记录员"], "topic": "signal", "target": "值班员", "record": "witness"},
+    "inspect_sheet": {"label": "核对信标校验纸", "kind": "inspect", "roles": ["记录员"], "topic": "calibration", "target": "check_sheet", "requires": ["ticket"], "grants": ["sheet_copy"]}
+  },
+  "reactions": {"signal": {"记录员": ["ask_duty"]}},
+  "followups": {"signal": {"值班员": {"receipt": true}}}
+}

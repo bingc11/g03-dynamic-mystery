@@ -15,19 +15,20 @@ type Turn = {
 type Task = { id: string; status: string; actor: string };
 type RunState = { turns: Turn[]; tasks: Task[] };
 type Outcome = { handled: boolean; turn?: Turn; task?: Task; driver?: string };
-type Request = { request_id: string; actor: string; text: string; evidence?: string };
+type Request = { request_id: string; actor: string; text: string; evidence?: string; note?: boolean };
 type Seat = { id: string; name: string };
 export type InvestigationEvent = {
   id: string; actor: string; text: string; source?: string; classification?: string;
   cause?: string; time?: string | number; kind?: string; driver?: string; view?: string;
-  source_name?: string; observer?: string;
+  source_name?: string; observer?: string; recipient?: string;
 };
 type InvestigationRoom = {
   case_id: string; self: Seat; players: Seat[]; evidence: string[];
   evidence_details?: EvidenceInventory['details']; public: InvestigationEvent[]; solved: boolean;
 };
-type AssistLevel = 'summary' | 'nudge' | 'answer';
-export type AssistResult = { text: string; driver?: string };
+type AssistLevel = 'summary' | 'nudge' | 'answer' | 'plan';
+export type InvestigationStep = { actor: string; text: string; prepare: string[] };
+export type AssistResult = { text: string; driver?: string; steps?: InvestigationStep[] };
 
 type DispatchResult = 'handled' | 'chat' | 'legacy';
 type Actions = {
@@ -35,13 +36,15 @@ type Actions = {
   verdictOptions?: VerdictOptions;
   room: InvestigationRoom | null;
   inventory?: EvidenceInventory;
-  dispatch: (actor: Actor, text: string, evidence?: string) => Promise<DispatchResult>;
+  dispatch: (actor: Actor, text: string, evidence?: string, note?: boolean) => Promise<DispatchResult>;
   createInvite: () => Promise<string>;
   share: (turnId: string) => Promise<void>;
-  replay: () => Promise<InvestigationEvent[]>;
+  replay: (role?: string, through?: string) => Promise<{ events: InvestigationEvent[]; roles: string[] }>;
   assist: (level: AssistLevel, query?: string) => Promise<AssistResult>;
   verdict: (suspect: string, motive: string) => Promise<{ correct: boolean; message: string }>;
   finish: () => void;
+  draft: InvestigationStep | null;
+  setDraft: (step: InvestigationStep | null) => void;
 };
 const Context = createContext<Actions | null>(null);
 export const useNpcActions = () => useContext(Context);
@@ -76,7 +79,7 @@ async function request<T>(route: string, input?: unknown, token?: string): Promi
     if (!response.ok) {
       throw new RequestError(
         response.status,
-        typeof body.detail === 'string' ? body.detail : '调查行动未完成',
+        body.detail?.message || (typeof body.detail === 'string' ? body.detail : '调查行动未完成'),
         response.status === 409 && response.headers.has('Retry-After'),
       );
     }
@@ -135,6 +138,7 @@ export function NpcActions({
   const [caseActions, setCaseActions] = useState<CaseActions | null>();
   const [setupError, setSetupError] = useState('');
   const [room, setRoom] = useState<InvestigationRoom | null>(null);
+  const [draft, setDraft] = useState<InvestigationStep | null>(null);
   const [seatName, setSeatName] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
@@ -245,6 +249,7 @@ export function NpcActions({
     if (!run || !active() || restored.current) return;
     const state = await request<RunState>('state', undefined, run);
     remember(state.turns);
+    restored.current = true;
     for (const task of state.tasks) {
       if (!active()) return;
       if (task.status === 'accepted') await resume(run, task);
@@ -262,7 +267,6 @@ export function NpcActions({
         clearPending(move);
       }
     }
-    restored.current = true;
   }, [active, clearPending, remember, resume, submit]);
 
   useEffect(() => {
@@ -318,7 +322,7 @@ export function NpcActions({
       return result;
     });
 
-  const dispatch: Actions['dispatch'] = (actor, text, evidence) => enqueue(async () => {
+  const dispatch: Actions['dispatch'] = (actor, text, evidence, note) => enqueue(async () => {
     if (!active()) return 'handled';
     let turn: Turn | undefined;
     let sent: Request | undefined;
@@ -326,14 +330,13 @@ export function NpcActions({
       if (!active()) return 'handled';
       if (!caseActions) return 'legacy';
       if (!caseActions.actors.includes(actor.name)) return 'chat';
-      if (evidence && !caseActions.evidence.includes(evidence)) return 'chat';
       await restore();
       if (!active()) return 'handled';
       sent = pending.current.find(previous =>
-        previous.actor === actor.name && previous.text === text && previous.evidence === evidence
+        previous.actor === actor.name && previous.text === text && previous.evidence === evidence && previous.note === note
       );
       if (!sent) {
-        sent = { request_id: nanoid(), actor: actor.name, text, evidence };
+        sent = { request_id: nanoid(), actor: actor.name, text, evidence, note };
         savePending([...pending.current, sent]);
       }
       const move = sent;
@@ -362,12 +365,13 @@ export function NpcActions({
 
   const inventory = useMemo<EvidenceInventory | undefined>(() =>
     room && caseActions
-      ? { held: room.evidence, registered: caseActions.evidence, details: room.evidence_details || [] }
+      ? { held: room.evidence, registered: Array.from(new Set([...caseActions.evidence, ...room.evidence])), details: room.evidence_details || [] }
       : undefined,
   [caseActions, room]);
 
   const actions: Actions = {
     managed: Boolean(caseActions), verdictOptions: caseActions?.verdict, room, inventory, dispatch,
+    draft, setDraft,
     createInvite: async () => {
       const result = await perform<{ invite: string }>('invite', {}, true);
       const url = new URL('/play/' + encodeURIComponent(caseId), window.location.origin);
@@ -375,7 +379,12 @@ export function NpcActions({
       return url.href;
     },
     share: async (turnId) => { await perform('share', { turn_id: turnId }, true); },
-    replay: async () => (await perform<{ events: InvestigationEvent[] }>('replay')).events,
+    replay: (role, through) => {
+      const query = new URLSearchParams();
+      if (role) query.set('role', role);
+      if (through) query.set('through', through);
+      return perform('replay?' + query.toString());
+    },
     assist: (level, query) => perform('assist', { level, query }),
     verdict: (suspect, motive) => perform('verdict', { suspect, motive }, true),
     finish: () => { finished.current = true; },

@@ -43,7 +43,7 @@ def serve(handler, port):
 
 
 @contextmanager
-def serve_api(data_dir, port, fixture_port, *, live=False):
+def serve_api(data_dir, port, fixture_port, *, live=False, llm_required=False):
     data_dir = Path(data_dir).resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     env = {key: os.environ[key] for key in ("PATH", "LANG", "LC_ALL", "TZ") if key in os.environ}
@@ -59,7 +59,7 @@ def serve_api(data_dir, port, fixture_port, *, live=False):
     )
     if live:
         env.pop("PYTHON_DOTENV_DISABLED")
-        env.update(INFERENCE_SERVICE="deepseek", NPC_DECISION_MODE="llm")
+        env.update(INFERENCE_SERVICE="deepseek", NPC_DECISION_MODE="llm-required" if llm_required else "llm")
         for key in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL", "DEEPSEEK_MODEL",
                     "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "SSL_CERT_FILE", "SSL_CERT_DIR",
                     "http_proxy", "https_proxy", "all_proxy", "no_proxy"):
@@ -108,7 +108,9 @@ def main():
     parser.add_argument("--api-port", type=int, default=10000)
     parser.add_argument("--web-port", type=int, default=5001)
     parser.add_argument("--live", action="store_true", help="Use the server's configured DeepSeek game runtime.")
+    parser.add_argument("--llm-required", action="store_true", help="Use DeepSeek and fail on every decision fallback.")
     args = parser.parse_args()
+    args.live = args.live or args.llm_required
     if not (BUILD / "index.html").is_file():
         parser.error("Run the React production build before starting this harness.")
     if args.live and not (os.environ.get("DEEPSEEK_API_KEY")
@@ -116,7 +118,7 @@ def main():
         parser.error("Set DEEPSEEK_API_KEY in the server environment or api/.env to use --live.")
     fixture = nullcontext(None) if args.live else serve(DialogueFixture, 0)
     with fixture as fixture_port:
-        with serve_api(args.data_dir, args.api_port, fixture_port, live=args.live) as api_pid:
+        with serve_api(args.data_dir, args.api_port, fixture_port, live=args.live, llm_required=args.llm_required) as api_pid:
             with serve(partial(ProductionReact, directory=BUILD), args.web_port):
                 mode = "DeepSeek" if args.live else "Mock"
                 print(f"{mode} API PID {api_pid}: http://{LOOPBACK}:{args.api_port}", flush=True)
