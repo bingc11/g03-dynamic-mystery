@@ -28,3 +28,9 @@
 - `Actor.tsx` 和 `npcActions.tsx` 通过案件元数据和后端意图处理选择委托通道，普通聊天保留原 `/invoke/stream`。旧助手、笔记和证物面板可继续使用，已受理任务可在原聊天恢复。
 - `web/src/data/harborBlackout.ts` 把雾港案放入原剧本库，案件结案题验证作者设定的凶手和动机。第一轮宫廷案继续使用其原流程。
 - 原对话输入、证物出示、角色选择与结案路径沿用原 React 组件。生产构建 `npm run build` 通过。
+
+## 回归与交付
+
+- Chromium 回归发现简化数据库的剧本列表省略证物字段。刷新后数据库副本覆盖了雾港案内置证物，导致无法补齐前置条件。合并剧本时现在保留内置证物作为缺省值，并遵从数据库明确提供的列表。
+- 云端运行了完整 FastAPI、生产构建、HTTP 重启/并发测试与两案 Chromium 操作。真实模型配置没有授权凭据，模型决策使用 Mock。实际命令、操作和可回查的证据在 [ACCEPTANCE.md](ACCEPTANCE.md)。
+- 云端 GitHub 连接的 `Nnnnobel` 对 `bingc11/g03-dynamic-mystery` 当前只有读取权限。HTTPS 推送测试返回 HTTP 403，创建 fork 同样返回 403。仓库连接取得写权限或可写 fork 后，第二轮分支可以直接用于 Draft PR。
