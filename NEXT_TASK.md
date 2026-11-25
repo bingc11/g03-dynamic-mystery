@@ -1,5 +1,9 @@
 # G03 后续记录
 
+## Issue #5 审查入口
+
+新分支 `feature/g03-agent-investigation` 基于 PR #2 的 `0119ed0c49a7b9d936374126401dc5f1a93c5964`。先复查严格真实双案轨迹及历史权限反例，再看生产截图中的草稿确认和角色筛选。继续积累课堂真实表达后可扩充固定语料，尤其关注容易进入澄清的省略指代。[本轮验收](ACCEPTANCE.md#issue-5-云端验收) · [Issue #5](https://github.com/bingc11/g03-dynamic-mystery/issues/5)
+
 ## Issue #4 交付后
 
 本次实施与验证继续使用 PR #2 的 `feature/scottishfold-delegation`。`deepseek-flash` 已在本项目的云端运行验证。审查可从雾港委托与双席公开路径开始，评测包含真实请求、回退和三角色对照。[验收](ACCEPTANCE.md) · [课堂脚本](docs/CLASSROOM.md) · [评测](docs/EVALUATION.md) · [主任务](https://github.com/bingc11/g03-dynamic-mystery/issues/4) · [Draft PR #2](https://github.com/bingc11/g03-dynamic-mystery/pull/2)

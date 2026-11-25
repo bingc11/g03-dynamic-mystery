@@ -1,5 +1,14 @@
 # G03 施工状态
 
+## Issue #5 云端交付
+
+本轮从 PR #2 的 `0119ed0c49a7b9d936374126401dc5f1a93c5964` 派生 `feature/g03-agent-investigation`。开工前已 fetch，PR #2 保持 Draft，工作树干净，35 项基线单测独立复跑通过。Issue #5 是本轮目标和验收依据。[Issue #5](https://github.com/bingc11/g03-dynamic-mystery/issues/5)
+
+1. 增加严格真实模型模式、提示版本、失败审计和操作回滚，保留普通游玩时带提示的降级。
+2. 引入固定意图评测以及同主题只读校验，补否定、取消和修改路由。普通聊天与共享笔记成为有来源的长时事件。
+3. 用原界面接入可编辑任务草稿与历史角色视角，限制未授权的证物、历史 ID 与私有内容读取。
+4. 增加合成案件及中断结算测试。复跑真实 DeepSeek、Mock、Rules、完整 FastAPI 和生产浏览器。[本轮验收](ACCEPTANCE.md#issue-5-云端验收)
+
 ## Issue #4 云端交付
 
 2026 年 11 月 25 日（北京时间）从 PR #2 的 `c576b2aeaf25f4ce219992e69a51882bedb546e9` 继续。远端工作分支是 `feature/scottishfold-delegation`，评审目标是 `feature/scottishfold-npc-actions`，目标头部 `548d31a038a6067da852a82a47cdfdaf43e2cead` 已核实为祖先。复核旧审查的直接目击证词和委托结果顺序，保留对应回归。Issue #4 是本次验收依据。[主任务](https://github.com/bingc11/g03-dynamic-mystery/issues/4) · [Draft PR #2](https://github.com/bingc11/g03-dynamic-mystery/pull/2)

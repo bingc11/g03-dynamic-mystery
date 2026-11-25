@@ -19,6 +19,8 @@ python tools/simulate_cases.py --driver rules --output /tmp/g03-eval-rules.json
 
 新案的评测场景与两套现有用例写在同一个场景文件。真实模型比较使用同一组输入和显式调用上限，命令见验收记录。[评测情境](../tools/npc_scenarios.json)
 
+第三份合成配置《信标校验》可直接通过 FastAPI 开局。它验证私下联络、物件查阅、前置签入表、隐藏证物授予和结案。第三 fixture 供测试使用，从新案件 JSON 到引擎执行无需添加案件分支。若作为可玩新案公开展示，再补一份剧本库展示数据和入口。运行 `python tools/check_investigation.py` 可复现实测。[第三案件配置](../api/npc_cases/signal_fixture.json)
+
 典型的同类案件需要一个服务端 JSON、一个前端展示数据文件和一处剧本库注册。对应场景配置与断言随案补齐。引入全新的动作类型或证物机制时，应先描述新增规则与验收条件，再修改引擎。
 
 ## 配置表

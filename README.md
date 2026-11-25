@@ -34,6 +34,8 @@ python tools/round2_runtime.py --data-dir ./data/mock
 python tools/round2_runtime.py --live --data-dir ./data/deepseek
 ```
 
+验收使用 `python tools/round2_runtime.py --llm-required --data-dir ./data/strict`。严格模式禁止模型降级，缺少配置、超时或最终输出不合法时返回 503 和原因。命令行双案验收可独立运行 `python tools/check_live_investigation.py --output /tmp/g03-live.json`。
+
 先结束占用同一端口的 Mock 演示。启动器默认使用前端端口 5001、API 端口 10000。真实模型不可用或达到预算时，调查决策降级为规则，面板会标记其来源。常规自动回归用 Mock 或 Rules，避免测试依赖外部模型。
 
 ## 第一条委托
@@ -41,6 +43,7 @@ python tools/round2_runtime.py --live --data-dir ./data/deepseek
 1. 在剧本库打开《雾港停电案》，选择宋屿。
 2. 输入「帮我去问问门卫昨晚谁进过仓库」。宋屿回报后，你可以在对话中公开这条线索给同局玩家。
 3. 问阮岑「是谁来问过西门出入？」，再找林遥核对两份证词的时间。「调查记录」可以整理线索、建议下一步和回看已有事件。
+4. 在「调查记录」输入复杂目标并点「拆解调查目标」。选择一步填入目标角色的原对话框，编辑后由你发送。用「角色视角」和「查看至此」回看当时自己有权看到的交集。普通聊天或主动分享给角色的笔记可以被同一角色记住，仍保留说话人和原始类型。
 
 [完整试玩及课堂演示](docs/CLASSROOM.md) · [架构与权限边界](docs/ARCHITECTURE.md) · [新案件接入](docs/CASE_AUTHORING.md) · [验收和复现](ACCEPTANCE.md) · [自动评测与真实模型记录](docs/EVALUATION.md)
 

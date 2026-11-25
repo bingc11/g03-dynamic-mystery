@@ -1,5 +1,63 @@
 # G03 验收记录
 
+## Issue #5 云端验收
+
+2026 年 11 月 25 日（北京时间）在 Codex Cloud 从 PR #2 的 `0119ed0c49a7b9d936374126401dc5f1a93c5964` 派生分支 `feature/g03-agent-investigation`，基线 35 项单测重新通过。下列结果均来自本轮。复验的实现及脚本提交为 `5a4f4657ee207c0c662fc59fe9638fb4662c5e51`。新 Draft PR 的目标分支是 `feature/scottishfold-delegation`。[Issue #5](https://github.com/bingc11/g03-dynamic-mystery/issues/5)
+
+| 最终标准 | 本轮验证 |
+| --- | --- |
+| 1 · 真实模型证据 | `llm-required` 启动完整 FastAPI，雾港和宫廷各完成 12 次真实决策请求，均为 `deepseek-flash`、`driver=llm` 且无失败或降级。记录提示版本 `g03-issue5-v2`、时间、用量和原始候选。另用严格模式在生产 Chromium 走通雾港。 |
+| 2 · 完整玩家循环 | 原对话框覆盖普通聊天、已知信息询问、澄清、委托、私下联络、进度与来源、查阅材料及玩家结案。生产 Chromium 回归两案与原旧剧本。 |
+| 3 · 角色差异 | 同一秘录分别展示给太平公主、御史大夫、张昌宗。程序记录各自关系、目标和所知材料，以及真实模型选中的不同动作。对同一接收事件，再用自动化验证不同信任条件改变接收者反应。 |
+| 4 · 权限 | 非法候选、伪造隐藏证物、跨席回报、跨席历史游标和过早展示解释均被拒绝。记录玩家笔记为推测，未提升为事实。固定场景未见越权执行或私聊泄露。 |
+| 5 · 追溯 | 事件保有稳定 ID、来源、可见范围与因果。回溯支持角色筛选和截至某一节点。父链接只投影到本席可见事件，私聊原文和 ID 保持私有。 |
+| 6 · 可靠性 | 测试覆盖 6 路重复恢复、服务重启、刷新、过期、非法/格式错误输出、严格模式超时后重新结算、保存事务失败。子进程在构造结算后未落库直接退出，API 拒绝占用中的租约，租约期满后只结算一次。该试验通过测试数据库强制模拟到期。 |
+| 7 · 意图质量 | 56 条固定语料覆盖指定路由并补增联系回执、记忆查询和双目标保护。最终严格真实模型加同主题只读判别得到 55/56（98.21%），无把错误意图路由为新委托。原始模型候选单算 49/56（87.5%）。 |
+| 8 · 三案复用 | 合成《信标校验》只添加案件 JSON。完整 FastAPI 运行联络、出示前置材料、查阅与授予隐藏证物并结案。 |
+| 9 · 玩家辅助 | 模型按所在席位信息组织任务草稿，选中一步只填入对话框。原文可以编辑。总结区分核实材料、待核实主张和玩家推测，保留来源。 |
+| 10 · 回归 | 43 项 Python 单测、两项完整 FastAPI 集成检查、Mock / Rules 双案固定情境、React 生产构建和 Chromium 回归。构建产物 `main.167c29d0.js`，396.89 kB gzip，保留上游 lint 警告。 |
+| 11 · 文档 | 启动和模型配置、调用预算、架构与权限、剧本制作、课堂路径、复现命令和证据均可从下方进入。 |
+
+### 执行命令
+
+```sh
+NPC_DECISION_MODE=mock python -m unittest discover -s tests
+python tools/check_delegation.py
+python tools/check_investigation.py
+python tools/simulate_cases.py --driver mock --output /tmp/g03-mock.json
+python tools/simulate_cases.py --driver rules --output /tmp/g03-rules.json
+python tools/check_intents.py --output /tmp/g03-intent-mock.json
+python tools/check_intents.py --mode llm-required --max-attempts 65 --output /tmp/g03-intent-live.json
+python tools/check_live_investigation.py --output /tmp/g03-strict-cases.json
+python tools/simulate_cases.py --driver llm --contrast --max-provider-attempts 7 --output /tmp/g03-roles.json
+(cd web && npm run build)
+```
+
+两个完整 FastAPI 检查与上述最终命令退出 0。真实角色对照的模式为 `llm`，实测四次请求都成功，无降级。固定语料的历史首跑为 49/56，退出 1。加同主题只读分类后重新运行完整 56 条语料，退出 0。唯一误判是「替我核对这两份证词」走澄清。澄清无副作用，明确说出校时日志可继续。Mock 为 55/56，唯一错误是把询问监控显示时刻当作闲聊。语料命中率只反映该固定集合。[意图评测复测](docs/evidence/issue5/intent-deepseek.json) · [Mock 对照](docs/evidence/issue5/intent-mock.json) · [固定语料](tools/intent_samples.tsv)
+
+严格双案共 24 次成功请求、42,181 个输入 token、215 个输出 token、24.406 秒累计外部请求时长。严格意图复测共 56 次成功请求、94,995 个输入 token、503 个输出 token、61.617 秒累计时长。另一次严格雾港 Chromium 流程有 7 次全部成功的请求，9,569 个输入 token、67 个输出 token、8.284 秒累计时长，无回退。报告保留归一化后的路由和原始候选 ID。公开记录使用固定测试输入，并省略密钥、邀请凭据和隐藏思维链。[严格双案事件轨迹](docs/evidence/issue5/strict-cases.json) · [生产浏览器模型记录](docs/evidence/issue5/strict-browser-model.json) · [角色对照](docs/evidence/issue5/role-comparison.json)
+
+启动 `python tools/round2_runtime.py --data-dir /tmp/g03-browser --api-port 10116 --web-port 5116`。安装 Playwright 后用 Chromium 验证生产界面。复跑真实雾港时启动器加 `--llm-required`，浏览器命令加 `DEMO_LIVE=1`。示例使用 `chromium` 的系统路径。
+
+```sh
+npm install --prefix /tmp/g03-browser-tools playwright
+PLAYWRIGHT_MODULE=/tmp/g03-browser-tools/node_modules/playwright \
+CHROME_PATH=/usr/bin/chromium DEMO_API_PORT=10116 DEMO_PORT=5116 \
+node tools/browser_delegation.cjs
+```
+
+### 试玩与材料
+
+在《雾港停电案》向宋屿发出「帮我去问问门卫昨晚谁进过仓库」，再向阮岑问「是谁来问过西门出入？」。打开「调查记录」，输入「先弄清两座钟，再核对出入和送审底单」，点「拆解调查目标」。把建议填入指定角色的对话框，确认措辞并主动发送。更新复盘后选择角色和截止事件，继续取证并由玩家结案。
+
+- [真实雾港结案截图](docs/evidence/issue5/strict-harbor.png) · [对应事件](docs/evidence/issue5/strict-harbor.jsonl)
+- [宫廷 Mock 通关截图](docs/evidence/issue5/palace-closed.png) · [对应事件](docs/evidence/issue5/palace-closed.jsonl)
+- [雾港第二席截图](docs/evidence/issue5/harbor-second-seat.png) · [对应事件](docs/evidence/issue5/harbor-second-seat.jsonl)
+- [草稿与回溯 Mock 浏览器截图](docs/evidence/issue5/plan-replay.png) · [对应事件](docs/evidence/issue5/plan-replay.jsonl)
+- [启动说明](README.md) · [系统与权限边界](docs/ARCHITECTURE.md) · [案件接入](docs/CASE_AUTHORING.md) · [8 分钟课堂路线](docs/CLASSROOM.md)
+
+合成案件用于引擎测试，未在剧本库上架。双席在独立 Chromium 会话验证，真人课堂观察仍待进行。普通闲聊采用可审计的角色候选，模型可以挑选表达和辅助步骤。柔性指代仍可能需要追问。独立 `tsc --noEmit` 的 Mantine 基线问题与个别缺失旧头像保持列在历史记录中。
+
 ## Issue #4 交付验收
 
 2026 年 11 月 25 日在 Codex Cloud 从 `c576b2aeaf25f4ce219992e69a51882bedb546e9` 继续，19 项基线单测独立复跑通过。最终验收使用 Python 3.12.14、Node 24.22.3、Chromium 156.0.8078.79、完整 `main:app` 和生产 React 前端。两案使用不同的案件数据与同一套角色、任务、席位和事件引擎。[主任务](https://github.com/bingc11/g03-dynamic-mystery/issues/4) · [Draft PR #2](https://github.com/bingc11/g03-dynamic-mystery/pull/2)
