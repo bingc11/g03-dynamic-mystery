@@ -1,0 +1,214 @@
+{
+  "case": "harbor_blackout",
+  "request": "帮我去问问门卫昨晚谁进过仓库",
+  "positive_control": "deepseek-browser.json#trials[2]",
+  "provider_attempts": 5,
+  "provider_attempt_limit": 7,
+  "trials": [
+    {
+      "actor": "林遥",
+      "missing_knowledge": null,
+      "reply": "我没有权限替你查昨晚西门的人员出入。你可以去问宋屿。",
+      "task_status": null,
+      "decisions": [
+        {
+          "actor": "林遥",
+          "driver": "llm",
+          "purpose": "intent",
+          "proposal": "delegate:gate",
+          "status": "selected"
+        },
+        {
+          "actor": "林遥",
+          "driver": "llm",
+          "purpose": "plan",
+          "proposal": "defer",
+          "status": "selected"
+        }
+      ],
+      "effects": [
+        {
+          "actor": "林遥",
+          "recipient": "$player",
+          "kind": "declined",
+          "source": "gate"
+        }
+      ],
+      "model": {
+        "attempts": 2,
+        "input_tokens": 2014,
+        "output_tokens": 18,
+        "input_budget_used": 2014,
+        "output_budget_used": 18,
+        "latency_ms": 3530,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 2
+        },
+        "audit": [
+          {
+            "at": 1795613682.31,
+            "purpose": "intent",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "37cf749a23bbe958ead3ae969b13b761c81419069ed4074910811cdaaaa4928b",
+            "input_tokens": 1488,
+            "output_tokens": 10,
+            "latency_ms": 2260,
+            "http_status": null,
+            "candidate_id": "delegate:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          },
+          {
+            "at": 1795613683.58,
+            "purpose": "plan",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 2,
+            "retry": false,
+            "request_sha256": "cb04c3cd16569af14661150e9061f54a93519cc1a29bdd3731b8dbc18f080f48",
+            "input_tokens": 526,
+            "output_tokens": 8,
+            "latency_ms": 1270,
+            "http_status": null,
+            "candidate_id": "defer",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "checks": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0
+      }
+    },
+    {
+      "actor": "宋屿",
+      "missing_knowledge": [
+        "阮岑",
+        "gate_witness"
+      ],
+      "reply": "好，我去向门卫阮岑问清昨晚西门的出入。\n\n我联系了阮岑，对方没有提供这件事的内容。",
+      "task_status": "failed",
+      "decisions": [
+        {
+          "actor": "宋屿",
+          "driver": "llm",
+          "purpose": "intent",
+          "proposal": "delegate:gate",
+          "status": "selected"
+        },
+        {
+          "actor": "宋屿",
+          "driver": "llm",
+          "purpose": "plan",
+          "proposal": "ask_guard",
+          "status": "selected"
+        },
+        {
+          "actor": "阮岑",
+          "driver": "llm",
+          "purpose": "response",
+          "proposal": "hide",
+          "status": "selected"
+        }
+      ],
+      "effects": [
+        {
+          "actor": "宋屿",
+          "recipient": "阮岑",
+          "kind": "private_question",
+          "source": "gate"
+        },
+        {
+          "actor": "宋屿",
+          "recipient": null,
+          "kind": "action_failed",
+          "source": "gate"
+        },
+        {
+          "actor": "宋屿",
+          "recipient": "$player",
+          "kind": "report",
+          "source": "gate"
+        }
+      ],
+      "model": {
+        "attempts": 3,
+        "input_tokens": 2372,
+        "output_tokens": 26,
+        "input_budget_used": 2372,
+        "output_budget_used": 26,
+        "latency_ms": 3292,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 3
+        },
+        "audit": [
+          {
+            "at": 1795613684.469,
+            "purpose": "intent",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "e8a7b7aaa8f8f1d5d67fb91dff3a2af80629a7a183b8f5b3681fade922c1de8c",
+            "input_tokens": 1430,
+            "output_tokens": 10,
+            "latency_ms": 888,
+            "http_status": null,
+            "candidate_id": "delegate:gate",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          },
+          {
+            "at": 1795613686.037,
+            "purpose": "plan",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 2,
+            "retry": false,
+            "request_sha256": "d39332b9b9276095e03c7a40c067e2f5f85485f579ff20d01c3976461f37b2e6",
+            "input_tokens": 490,
+            "output_tokens": 9,
+            "latency_ms": 1568,
+            "http_status": null,
+            "candidate_id": "ask_guard",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          },
+          {
+            "at": 1795613686.874,
+            "purpose": "response",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 3,
+            "retry": false,
+            "request_sha256": "d4b3c3d90a6dc686e47b2d9ef256bf1093656f2c67449ddc9ee17fa2c44b57cc",
+            "input_tokens": 452,
+            "output_tokens": 7,
+            "latency_ms": 836,
+            "http_status": null,
+            "candidate_id": "hide",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "checks": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0
+      }
+    }
+  ]
+}
