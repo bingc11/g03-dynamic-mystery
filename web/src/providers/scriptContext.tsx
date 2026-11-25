@@ -59,8 +59,9 @@ export const ScriptProvider: React.FC<ScriptProviderProps> = ({ children }) => {
         dbScripts.forEach(dbScript => {
           const existingIndex = mergedScripts.findIndex(ex => ex.id === dbScript.id);
           if (existingIndex >= 0) {
-            // 用数据库版本覆盖示例版本
-            mergedScripts[existingIndex] = dbScript;
+            const example = mergedScripts[existingIndex];
+            // 简化数据库的剧本列表省略证物字段，保留示例剧本自带的证物。
+            mergedScripts[existingIndex] = { ...dbScript, evidences: dbScript.evidences ?? example.evidences };
           } else {
             // 如果是新剧本，添加到列表
             mergedScripts.push(dbScript);
