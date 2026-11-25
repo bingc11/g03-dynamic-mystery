@@ -1,4 +1,4 @@
-"""Exercise the running local demo. Streams use the local fixture launched by local_demo.py."""
+"""Exercise the round-one /npc/act API when running the round-one checkout."""
 import argparse
 import json
 import urllib.error

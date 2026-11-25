@@ -1,0 +1,208 @@
+{
+  "id": "harbor_blackout",
+  "roles": {
+    "宋屿": {
+      "goal": "帮调查者理清西门进出时序，先找亲历者再按记录复核",
+      "interests": ["gate", "timing", "freight"],
+      "relations": {"$player": 2, "阮岑": 1, "林遥": 1, "罗钧": 0},
+      "knowledge": ["shift_notice"],
+      "disclosure": [],
+      "verify": ["gate_witness", "clock_claim"]
+    },
+    "阮岑": {
+      "goal": "诚实区分亲眼看到的衣着和自己无法辨明的身份",
+      "interests": ["gate", "supply"],
+      "relations": {"$player": 0, "宋屿": 2, "林遥": 0, "罗钧": -1},
+      "knowledge": ["gate_witness", "supply_sheet"],
+      "disclosure": ["gate_witness"],
+      "verify": []
+    },
+    "林遥": {
+      "goal": "准确说明停电后设备时钟的误差，在可信同事之间及时更正时间",
+      "interests": ["timing", "camera"],
+      "relations": {"$player": 1, "宋屿": 2, "阮岑": 0, "罗钧": -1},
+      "knowledge": ["clock_claim", "reset_log"],
+      "disclosure": ["clock_claim"],
+      "verify": []
+    },
+    "罗钧": {
+      "goal": "保护夜班货运账本，尽量避开对仓库称重记录的复核",
+      "interests": ["supply", "freight"],
+      "relations": {"$player": -2, "阮岑": -1, "宋屿": -1},
+      "knowledge": ["freight_copy"],
+      "disclosure": [],
+      "verify": []
+    }
+  },
+  "evidence": {
+    "harbor_work_order": {
+      "name": "停电检修工单",
+      "text": "市电计划在二十一点四十分停供，预计六分钟。西门门禁在停电期间由当班门卫手记。",
+      "topic": "gate"
+    },
+    "harbor_clock_strip": {
+      "name": "监控校时便条",
+      "text": "维修人员提醒，复电后监控屏时钟需要与北塔标准钟对时。便条没有记录偏差。",
+      "topic": "timing"
+    },
+    "harbor_weight_slip": {
+      "name": "半张过磅联",
+      "text": "同一批货物留下两处不同重量。折口压着「夜航四号」的单号。",
+      "topic": "freight"
+    }
+  },
+  "topics": {
+    "gate": {
+      "label": "昨晚西门的人员出入",
+      "aliases": ["门卫", "门岗", "阮岑", "西门", "进过仓库", "出入", "来过仓库", "进出", "反光背心"],
+      "options": ["ask_guard"]
+    },
+    "timing": {
+      "label": "对照两份证词的时间",
+      "aliases": ["两份证词", "钟表", "时间差", "时间对不上", "时钟", "时间戳", "校时", "复电", "对时", "监控时间"],
+      "options": ["inspect_reset"]
+    },
+    "supply": {
+      "label": "夜班器具及背心的领用",
+      "aliases": ["器具", "背心领用", "领用单", "器材", "领用表", "七号背心", "编号07", "编号 07"],
+      "options": ["inspect_supply"]
+    },
+    "freight": {
+      "label": "夜航四号过磅账本",
+      "aliases": ["过磅", "称重", "货运账", "货运原账", "过磅联", "夜航四号", "货重", "送审底单"],
+      "options": ["inspect_freight", "inspect_audit_receipt"]
+    },
+    "camera": {
+      "label": "停电期间的西门监控录像",
+      "aliases": ["录像", "录影", "监控备份", "停电录像", "拍到了什么"],
+      "options": ["inspect_camera"]
+    }
+  },
+  "records": {
+    "shift_notice": {
+      "name": "夜班换班通知",
+      "text": "停电时西门继续由当班门卫值守，门禁刷卡设备停用。",
+      "kind": "fact",
+      "topic": "gate"
+    },
+    "gate_witness": {
+      "name": "阮岑对西门出入的陈述",
+      "text": "二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。",
+      "kind": "claim",
+      "topic": "gate"
+    },
+    "clock_claim": {
+      "name": "林遥对复电后校时的说明",
+      "text": "我怀疑复电后屏幕上的时钟走快了，当班人记下的分钟数需要再对照北塔标准钟。",
+      "kind": "claim",
+      "topic": "timing"
+    },
+    "reset_log": {
+      "name": "北塔校时和监控复电日志",
+      "text": "复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。",
+      "kind": "fact",
+      "topic": "timing"
+    },
+    "supply_sheet": {
+      "name": "西门夜班器具领用表",
+      "text": "编号 07 的反光背心和过磅间备用钥匙都登记由罗钧领取，夜班结束时没有归还签字。",
+      "kind": "fact",
+      "topic": "supply"
+    },
+    "freight_copy": {
+      "name": "夜航四号过磅账本",
+      "text": "半张过磅联上的两个重量能在原账中找到。较低的数值旁边有盖章备注，纸上同批货的另一份复写重量明显更高。",
+      "kind": "fact",
+      "topic": "freight"
+    },
+    "audit_receipt": {
+      "name": "审计组的待交件登记",
+      "text": "程砚预约在次日早上递交夜航四号的两份过磅凭据，登记的核查事项为「申报重量高于实称重量」。",
+      "kind": "fact",
+      "topic": "freight"
+    },
+    "camera_backup": {
+      "name": "停电时段的西门录像备份",
+      "text": "",
+      "kind": "fact",
+      "topic": "camera",
+      "available": false
+    }
+  },
+  "actions": {
+    "ask_guard": {
+      "kind": "ask",
+      "label": "向门卫阮岑问清昨晚西门的出入",
+      "roles": ["宋屿"],
+      "topic": "gate",
+      "target": "阮岑",
+      "record": "gate_witness"
+    },
+    "inspect_reset": {
+      "kind": "inspect",
+      "label": "比对监控复电日志和北塔标准钟",
+      "roles": ["林遥"],
+      "topic": "timing",
+      "target": "reset_log"
+    },
+    "tell_clock": {
+      "kind": "tell",
+      "label": "把关于时钟误差的观察告诉宋屿",
+      "roles": ["林遥"],
+      "topic": "timing",
+      "target": "宋屿",
+      "record": "clock_claim"
+    },
+    "inspect_supply": {
+      "kind": "inspect",
+      "label": "查阅西门夜班器具领用表",
+      "roles": ["阮岑"],
+      "topic": "supply",
+      "target": "supply_sheet",
+      "requires": ["harbor_work_order"]
+    },
+    "inspect_freight": {
+      "kind": "inspect",
+      "label": "检查夜航四号的过磅账本",
+      "roles": ["罗钧"],
+      "topic": "freight",
+      "target": "freight_copy"
+    },
+    "inspect_audit_receipt": {
+      "kind": "inspect",
+      "label": "凭过磅联上的单号向审计组核查待交件登记",
+      "roles": ["宋屿"],
+      "topic": "freight",
+      "target": "audit_receipt",
+      "requires": ["harbor_weight_slip"]
+    },
+    "inspect_camera": {
+      "kind": "inspect",
+      "label": "从门禁设备读取停电时段的录像备份",
+      "roles": ["林遥"],
+      "topic": "camera",
+      "target": "camera_backup"
+    }
+  },
+  "reactions": {
+    "gate": {"宋屿": ["ask_guard"]},
+    "timing": {"林遥": ["tell_clock"]}
+  },
+  "followups": {
+    "gate": {
+      "阮岑": {
+        "receipt": true,
+        "baseline": "还没人来找我核对昨晚西门的出入。",
+        "disclose": "有人来核对过西门的出入。我告诉对方，我记的是北塔标准钟上的时间。你可以问我是谁来查的。"
+      }
+    },
+    "timing": {
+      "宋屿": {
+        "receipt": true,
+        "baseline": "还没人来说明两份证词为何差了几分钟。",
+        "accept": "我暂且按北塔标准钟排这段时序。你可以去问阮岑，他记录入库时用的是哪座钟。",
+        "question": "我听说监控屏的时间可能有误差，暂时不合并两份证词。请林遥核对北塔校时和监控复电日志，再把两份证词放在一起看。"
+      }
+    }
+  }
+}

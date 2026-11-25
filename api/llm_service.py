@@ -184,17 +184,20 @@ def get_system_prompt(request: InvocationRequest):
             f"重要提醒：只能基于上述故事背景中提到的角色、地点和事件进行对话，严禁创造剧本中没有的角色、人物关系或事件细节。"
             f"{additional_context}") + get_actor_prompt(request.actor, detective_name)
 
-def invoke_anthropic(system_prompt: str, messages: list[LLMMessage]):
-    client = anthropic.Anthropic(api_key=API_KEY)
+def invoke_anthropic(system_prompt: str, messages: list[LLMMessage], *,
+                     timeout: float | None = None, max_tokens: int | None = None):
+    options = {"timeout": timeout, "max_retries": 0} if timeout is not None else {}
+    client = anthropic.Anthropic(api_key=API_KEY, **options)
     response = client.messages.create(
         model=MODEL,
         system=system_prompt,
         messages=[msg.model_dump() for msg in messages],
-        max_tokens=MAX_TOKENS,
+        max_tokens=max_tokens if max_tokens is not None else MAX_TOKENS,
     )
     return response.content[0].text, response.usage.input_tokens, response.usage.output_tokens
 
-def invoke_openai(system_prompt: str, messages: list[LLMMessage], temperature: float = 0.7):
+def invoke_openai(system_prompt: str, messages: list[LLMMessage], temperature: float = 0.7, *,
+                  timeout: float | None = None, max_tokens: int | None = None):
     """调用OpenAI API
     
     Args:
@@ -202,19 +205,14 @@ def invoke_openai(system_prompt: str, messages: list[LLMMessage], temperature: f
         messages: 消息列表
         temperature: 温度参数，默认0.7适合对话，质检等结构化输出建议0.1
     """
-    if INFERENCE_SERVICE == 'groq':
-        client = openai.OpenAI(api_key=API_KEY, base_url=GROQ_API_BASE)
-    elif INFERENCE_SERVICE == 'openrouter':
-        client = openai.OpenAI(api_key=API_KEY, base_url=OPENROUTER_API_BASE)
-    elif INFERENCE_SERVICE == 'openai':
-        client = openai.OpenAI(api_key=API_KEY, base_url=OPENAI_API_BASE)
-    else:  # Default OpenAI
-        client = openai.OpenAI(api_key=API_KEY)
+    base_url = {'groq': GROQ_API_BASE, 'openrouter': OPENROUTER_API_BASE, 'openai': OPENAI_API_BASE}.get(INFERENCE_SERVICE)
+    options = {"timeout": timeout, "max_retries": 0} if timeout is not None else {}
+    client = openai.OpenAI(api_key=API_KEY, base_url=base_url, **options)
     
     response = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "system", "content": system_prompt}] + [msg.model_dump() for msg in messages],
-        max_tokens=MAX_TOKENS,
+        max_tokens=max_tokens if max_tokens is not None else MAX_TOKENS,
         temperature=temperature,
     )
     return response.choices[0].message.content, response.usage.prompt_tokens, response.usage.completion_tokens
@@ -255,13 +253,17 @@ def invoke_openai_stream(system_prompt: str, messages: list[LLMMessage], tempera
     
     return full_content
 
-def invoke_ollama(system_prompt: str, messages: list[LLMMessage]):
+def invoke_ollama(system_prompt: str, messages: list[LLMMessage], *,
+                  timeout: float | None = None, max_tokens: int | None = None):
     prompt = system_prompt + "\n" + "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
-    response = requests.post(f"{OLLAMA_URL}/api/generate", json={
+    payload = {
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
-    })
+    }
+    if max_tokens is not None:
+        payload["options"] = {"num_predict": max_tokens, "temperature": 0}
+    response = requests.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=timeout)
     response.raise_for_status()
     result = response.json()
     return result['response'], None, None  # Ollama doesn't provide token counts
