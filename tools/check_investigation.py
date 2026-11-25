@@ -28,7 +28,7 @@ def settle(client, token, request_id, role, line):
 
 def check_first_process(client, database):
     metadata = client.call(f"cases/{CASE}")
-    assert HIDDEN in metadata["evidence"] and "truth" not in metadata
+    assert HIDDEN not in metadata["evidence"] and "truth" not in metadata
     host = client.start(CASE)
     invite = client.call("invite", {}, host)["invite"]
     assert invite != host

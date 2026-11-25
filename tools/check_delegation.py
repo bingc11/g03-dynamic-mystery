@@ -113,11 +113,11 @@ def check(data_dir):
             failed = client.resume(palace, failed["task"]["id"])
             assert failed["task"]["status"] == "failed" and "无法调取" in failed["reply"]
             illegal = client.say(palace, "illegal", "太平公主", "出示这份材料", evidence="harbor_work_order")
-            assert "不在本案" in illegal["reply"]
+            assert "不能出示" in illegal["reply"]
             events = snapshot(database, palace)["events"]
             assert any(e["kind"] == "object_read" and e["result"]["classification"] == "fact" for e in events)
             assert events[-1]["kind"] == "rejected" and events[-1]["result"]["status"] == "unknown_evidence"
-            assert client.say(palace, "chat", "御史大夫", "今天精神可好？") == {"handled": False}
+            assert client.say(palace, "chat", "御史大夫", "今天精神可好？")["turn"]["classification"] == "observation"
             assert "哪位" in client.say(palace, "clarify", "太平公主", "能不能替我查一件事？")["reply"]
             assert "没有权限" in client.say(palace, "denied", "太平公主", "烦请查一查封存的内廷名册。")["reply"]
             assert "不愿意" in client.say(palace, "refused", "武惠妃", "劳烦你核查一下封存的内廷名册。")["reply"]
