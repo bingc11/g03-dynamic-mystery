@@ -27,7 +27,7 @@ export const createSafeActor = (actor: Actor): SafeActor => {
     bio: actor.bio,
     personality: actor.personality,
     context: actor.context,
-    messages: actor.messages,
+    messages: actor.messages.filter(message => !message.npcTurnId),
     isAssistant: actor.isAssistant,
     isPartner: actor.isPartner,
     roleType: actor.roleType, // 包含角色类型信息

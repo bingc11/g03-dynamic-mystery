@@ -5,6 +5,7 @@ import Story from "../characters.json";
 export interface LLMMessage {
   role: "user" | "assistant";
   content: string;
+  npcTurnId?: string;
 }
 
 export interface Actor {

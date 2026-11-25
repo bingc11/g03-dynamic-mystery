@@ -12,7 +12,7 @@ import ChatMessage from "./ChatMessage";
 import { generateBackgroundFromActor } from "../api/backgroundGenerator";
 import { useSessionContext } from "../providers/sessionContext";
 import { useScriptContext } from "../providers/scriptContext";
-import { registryQuestion, tracksActor, tracksEvidence, useNpcActions } from "../providers/npcActions";
+import { useNpcActions } from "../providers/npcActions";
 import CHARACTER_DATA from "../characters.json";
 import { 
   generateRoleReactionPrompt, 
@@ -149,21 +149,10 @@ const sendChatStream = (
   postGame?: boolean,
   detectiveName?: string,
   victimName?: string,
-  allActors?: Record<number, Actor>
+  allActors?: Record<number, Actor>,
+  managedChat = false,
 ) => {
   setLoading(true);
-  const setActor = (a: Partial<Actor>) => {
-    setActors((all) => {
-      const newActors = { ...all };
-      newActors[actor.id] = {
-        ...newActors[actor.id],
-        ...a,
-      };
-      return newActors;
-    });
-  };
-
-  setActor({ messages });
 
   // 智能角色交互逻辑
   let enhancedActor = { ...actor, messages };
@@ -221,23 +210,39 @@ const sendChatStream = (
         ]
       };
     }
-  } else if (postGame) {
   }
 
-  // 添加一个空的助手消息，用于流式更新
-  const assistantMessage: LLMMessage = {
-    role: "assistant",
-    content: "",
-  };
-  
-  setActor({
-    messages: [
-      ...messages,
-      assistantMessage,
-    ],
+  if (managedChat) {
+    enhancedActor = {
+      ...enhancedActor,
+      context: enhancedActor.context + "\n这轮只回应当面交流。委托由调查系统处理。请勿接受或承诺新的委托，也不要声称已在对话之外联系角色、查阅材料或执行核查。",
+    };
+  }
+
+  let assistantMessage: LLMMessage = { role: "assistant", content: "" };
+  const placeholder = assistantMessage;
+  setActors(all => {
+    const current = all[actor.id];
+    if (!current || current.name !== actor.name) return all;
+    return {
+      ...all,
+      [actor.id]: { ...current, messages: [...current.messages, messages[messages.length - 1], placeholder] },
+    };
   });
 
-  let fullResponse = "";
+  const updateAssistant = (content: string) => {
+    const previous = assistantMessage;
+    const updated: LLMMessage = { role: "assistant", content };
+    assistantMessage = updated;
+    setActors(all => {
+      const current = all[actor.id];
+      if (!current?.messages.includes(previous)) return all;
+      return {
+        ...all,
+        [actor.id]: { ...current, messages: current.messages.map(message => message === previous ? updated : message) },
+      };
+    });
+  };
 
   const cancelStream = invokeAIStream({
     globalStory,
@@ -247,37 +252,14 @@ const sendChatStream = (
     detectiveName,
     victimName,
     allActors,
-    onChunk: (content: string) => {
-      fullResponse += content;
-      // 监控流式内容接收（调试用）
-      
-      // 更新最后一条消息的内容
-      setActor({
-        messages: [
-          ...messages,
-          {
-            role: "assistant",
-            content: fullResponse,
-          },
-        ],
-      });
-    },
+    onChunk: (content: string) => updateAssistant(assistantMessage.content + content),
     onEnd: () => {
       setLoading(false);
     },
     onError: (error: string) => {
       console.error("❌ 流式响应错误:", error);
       setLoading(false);
-      // 在错误情况下，显示错误消息
-      setActor({
-        messages: [
-          ...messages,
-          {
-            role: "assistant",
-            content: `Error: ${error}`,
-          },
-        ],
-      });
+      updateAssistant(`Error: ${error}`);
     },
   });
 
@@ -287,6 +269,8 @@ const sendChatStream = (
 const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const [currMessage, setCurrMessage] = React.useState("");
   const { actors, setActors, globalStory } = useMysteryContext();
+  const latestActors = React.useRef(actors);
+  latestActors.current = actors;
   const { currentScript } = useScriptContext();
   const npcAction = useNpcActions();
   const [loading, setLoading] = useState(false);
@@ -309,36 +293,29 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const detectiveName = currentScript?.characters?.find(char => char.isPlayer)?.name;
   const victimName = currentScript?.characters?.find(char => char.isVictim)?.name;
 
-  const runNpcAction = async (message: string, action: 'ask' | 'show', source: string) => {
-    if (!npcAction || loading) return;
+  const sendFromDialogue = async (message: LLMMessage, evidenceId?: string) => {
     setLoading(true);
-    try {
-      await npcAction(actor, action, source, message);
-    } finally {
+    setCancelStream(null);
+    const outcome = !postGame && npcAction
+      ? await npcAction.dispatch(actor, message.content, evidenceId)
+      : 'legacy';
+    const current = latestActors.current[actor.id];
+    if (outcome === 'handled' || current?.name !== actor.name) {
       setLoading(false);
-    }
-  };
-  const handleSendMessage = () => {
-    // 如果输入框为空或只有空白字符，不发送消息
-    if (!currMessage.trim()) return;
-    const question = registryQuestion(currMessage);
-    if (!postGame && npcAction && question && tracksActor(actor)) {
-      setCurrMessage('');
-      void runNpcAction(currMessage.trim(), 'ask', question);
       return;
     }
-    
-    const newMessage: LLMMessage = {
-      role: "user",
-      content: currMessage.trim(),
-    };
-
-    // 立即清空输入框，提供即时反馈
-    setCurrMessage("");
-
-    // 使用流式版本，传递当前玩家角色和后剧情状态，以及侦探和受害者名称
-    const cancel = sendChatStream([...actor.messages, newMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
+    const cancel = sendChatStream(
+      [...current.messages, message], setActors, globalStory, sessionId, current, setLoading,
+      currentPlayerActor, postGame, detectiveName, victimName, latestActors.current, outcome === 'chat',
+    );
     setCancelStream(() => cancel);
+  };
+
+  const handleSendMessage = () => {
+    const text = currMessage.trim();
+    if (!text || loading) return;
+    setCurrMessage("");
+    void sendFromDialogue({ role: "user", content: text });
   };
 
   const handleStopGeneration = () => {
@@ -358,11 +335,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
 
   // 处理证物发送
   const handleEvidenceSend = (evidence: Evidence, textContent?: string) => {
-    if (!postGame && npcAction && tracksEvidence(actor, evidence.id)) {
-      setShowEvidenceSelector(false);
-      void runNpcAction('[发送证物] ' + evidence.name + (textContent ? '：' + textContent : ''), 'show', evidence.id);
-      return;
-    }
+    if (loading) return;
     // 构建完整的证物信息消息，供AI生成智能反应
     // AI获取完整信息（包含概况和线索）
     let evidenceDetails = getFullEvidenceForAI(evidence);
@@ -398,8 +371,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
     // 立即关闭证物选择器，提供即时反馈
     setShowEvidenceSelector(false);
 
-    const cancel = sendChatStream([...actor.messages, evidenceMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
-    setCancelStream(() => cancel);
+    void sendFromDialogue(evidenceMessage, evidence.id);
   };
 
   // 处理笔记发送
@@ -699,7 +671,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
               }}
             />
             <div className="loading-cyber" />
-            <Button 
+            {cancelStream && <Button
               size="sm" 
               variant="outline" 
               className="btn-crimson"
@@ -711,7 +683,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
               }}
             >
               停止
-            </Button>
+            </Button>}
           </>
         ) : (
           <TextInput
