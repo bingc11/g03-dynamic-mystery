@@ -192,6 +192,16 @@ async function main() {
   }
 
   try {
+    if (process.env.DEMO_LIVE === '1') {
+      await openCase('雾港停电案', 'harbor_blackout');
+      await talk('宋屿', '帮我去问问门卫昨晚谁进过仓库', { status: 'completed', fragment: /没看清脸/, driver: 'llm' });
+      await talk('阮岑', '有人来问过西门出入吗？', { fragment: /有人/, driver: 'llm' });
+      await talk('阮岑', '是谁来问过西门出入？', { fragment: /宋屿/, driver: 'llm' });
+      await talk('林遥', '请帮我比对监控复电日志和北塔标准钟。', { status: 'completed', fragment: /快八分钟/, driver: 'llm' });
+      await closeCase('宋屿', '罗钧', '掩盖虚报货重');
+      await capture('harbor_blackout', 'strict-harbor');
+      return;
+    }
     if (live) {
       await openCase('雾港停电案', 'harbor_blackout');
       const guest = await inviteGuest();

@@ -5,7 +5,10 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 from tempfile import TemporaryDirectory
+from urllib.parse import urlencode
 
 from check_delegation import Client
 from local_demo import DialogueFixture
@@ -63,6 +66,10 @@ def check_first_process(client, database):
     assert proof["turn"]["id"] not in private_turns and "由罗钧领取" not in private_turns
     assert not any(event["source"] == HIDDEN for event in client.call("replay", token=guest)["events"])
     assert any(event["source"] == HIDDEN for event in client.call("replay", token=host)["events"])
+    source = next(event for event in client.call("replay", token=host)["events"] if event["source"] == HIDDEN)
+    cursor = "replay?" + urlencode({"role": "宋屿", "through": source["id"]})
+    client.call(cursor, token=guest, status=404)
+    assert source["id"] in {event["id"] for event in client.call(cursor, token=host)["events"]}
 
     # Sharing explicitly publishes one attributed clue. Its causal parent stays private.
     share = {"turn_id": gear["turn"]["id"]}
@@ -129,6 +136,43 @@ def check_second_process(client, database, host, guest, expired_task, guest_task
     assert sum(event["kind"] == "object_read" and event["source"] == "reset_log" for event in stats["events"]) == 1
 
 
+def check_crash_recovery(client, database):
+    token = client.start("signal_fixture")
+    task = client.say(token, "fixture-contact", "记录员", "帮我去问问值班员北侧信标熄灭的经过")["task"]
+    assert task["status"] == "accepted"
+    key = sha256(token.encode()).hexdigest()
+    code = """
+import os
+import sys
+from pathlib import Path
+from npc_decisions import Decisions
+from npc_dialogue import Dialogue, load_case
+from npc_store import PlaythroughStore
+
+with PlaythroughStore(Path(sys.argv[1])).claim(sys.argv[2]) as run:
+    game = Dialogue(load_case(run.case_id), run.snapshot, Decisions('mock'))
+    assert game.resume(sys.argv[3])['task']['status'] == 'completed'
+    os._exit(17)
+"""
+    root = Path(__file__).resolve().parents[1]
+    child = subprocess.run([sys.executable, "-c", code, str(database), key, task["id"]], cwd=root / "api", timeout=12)
+    assert child.returncode == 17
+    before = snapshot(database, token)
+    assert before["tasks"][task["id"]]["status"] == "accepted" and not any(
+        event["kind"] == "private_question" for event in before["events"])
+    client.resume(token, task["id"], status=409)
+    with closing(sqlite3.connect(database)) as db, db:
+        db.execute("UPDATE npc_playthroughs SET lease_until=0 WHERE run_hash=?", (key,))
+    settled = client.resume(token, task["id"])
+    assert settled["task"]["status"] == "completed" and client.resume(token, task["id"]) == settled
+    assert sum(event["kind"] == "private_question" for event in snapshot(database, token)["events"]) == 1
+    assert "sheet_copy" not in client.call("cases/signal_fixture")["evidence"]
+    client.say(token, "fixture-present", "记录员", "请看测试签入表。", evidence="ticket")
+    assert settle(client, token, "fixture-read", "记录员", "请帮我核对信标校验纸。")["turn"]["classification"] == "fact"
+    assert "sheet_copy" in client.call("room", token=token)["evidence"]
+    assert client.call("verdict", {"suspect": "值班员", "motive": "掩盖漏检"}, token)["correct"]
+
+
 def main():
     with TemporaryDirectory(prefix="g03-investigation-") as directory:
         data_dir = Path(directory)
@@ -145,6 +189,8 @@ def main():
                 assert first != second
                 check_second_process(client, database, host, guest, expired_task, guest_task)
                 print(f"PASS restarted FastAPI PID {second}: expired and restored tasks settled once, independent verdicts")
+                check_crash_recovery(client, database)
+                print("PASS synthetic case: interrupted settlement, expired lease takeover, evidence and verdict")
 
 
 if __name__ == "__main__":
