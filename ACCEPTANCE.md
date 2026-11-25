@@ -71,3 +71,13 @@ node tools/browser_delegation.cjs
 - 宫廷委托的回报与追问。[回报截图](docs/evidence/round2/palace-delegation.png) · [回报事件](docs/evidence/round2/palace-delegation.jsonl) · [追问截图](docs/evidence/round2/palace-follow-up.png) · [追问事件](docs/evidence/round2/palace-follow-up.jsonl)
 - 宫廷案提交指认后的页面。[结案截图](docs/evidence/round2/palace-closed.png) · [结案时的事件](docs/evidence/round2/palace-closed.jsonl)
 - 雾港案门卫的具名陈述与玩家结案。[追问截图](docs/evidence/round2/harbor-follow-up.png) · [追问事件](docs/evidence/round2/harbor-follow-up.jsonl) · [结案截图](docs/evidence/round2/harbor-closed.png) · [结案时的事件](docs/evidence/round2/harbor-closed.jsonl)
+
+## 2026-11-25 云端恢复复验
+
+在现有 Cloud 工作区复验 `3d81b37e15a9267918739e671b9a4d5e4204722b`。此次只更新验收和交付随记。
+
+- `python -m unittest discover -s tests -v`，15 项通过。
+- `python tools/check_delegation.py`，完整 FastAPI 从 PID 6071 重启到 6095。6 个并发恢复请求获得同一终态，库中只有一次私聊和回报。双案、私聊隔离、非法证物和失败回报均通过。
+- `cd web && npm run build`，退出 0，生成 `main.4c294d83.js`，393.72 kB gzip。原有 ESLint 警告仍在。
+- `python tools/round2_runtime.py --data-dir /workspace/scratch/g03-resume/browser-db` 配合上面的 Playwright 命令运行。两案从剧本库到结案均通过，雾港案的恢复请求被丢弃后刷新，游戏只显示一份回报。5 组新截图与轨迹复核了事件标识、父事件顺序以及私聊可见范围，事件数与仓库中的 5 组存档一致，分别为 14、18、46、11、38。
+- 云端项目模型配置复核仍无授权凭据，真实 LLM 未验证。
