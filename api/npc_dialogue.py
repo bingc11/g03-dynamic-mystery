@@ -118,11 +118,12 @@ class Dialogue:
         if actor not in action["roles"]:
             return False
         if action["kind"] == "tell":
-            return (
-                action["record"] in self.state["roles"][actor]["known"]
-                and action["record"] in self.case["roles"][actor]["disclosure"]
-            )
+            return self._may_disclose(actor, action["record"])
         return action["kind"] in ("ask", "inspect")
+
+    def _may_disclose(self, actor, record_id):
+        return (record_id in self.state["roles"][actor]["known"]
+                and record_id in self.case["roles"][actor]["disclosure"])
 
     def _missing(self, actor, action):
         shown = self.state["roles"][actor]["shown"]
@@ -146,7 +147,9 @@ class Dialogue:
         for topic in topics:
             candidates.extend([
                 {"id": f"delegate:{topic['id']}", "label": f"委托处理：{topic['label']}"},
+                {"id": f"inquire:{topic['id']}", "label": f"直接询问角色所知：{topic['label']}"},
                 {"id": f"followup:{topic['id']}", "label": f"询问进展：{topic['label']}"},
+                {"id": f"receipt:{topic['id']}", "label": f"询问收到过什么消息或联系：{topic['label']}"},
                 {"id": f"origin:{topic['id']}", "label": f"追问来源：{topic['label']}"},
             ])
         pending = self.state["pending"].get(actor)
@@ -171,7 +174,10 @@ class Dialogue:
         self.state["pending"].pop(actor, None)
         if kind == "delegate":
             return self._delegate(request_id, actor, text, topic, decision)
-        reply = self._followup(actor, topic, kind == "origin", decision)
+        if kind == "inquire":
+            reply = self._inquire(actor, topic, decision)
+        else:
+            reply = self._followup(actor, topic, kind, decision)
         return self._reply(request_id, actor, text, reply, driver)
 
     def _delegate(self, request_id, actor, text, topic, cause):
@@ -310,7 +316,7 @@ class Dialogue:
         # A conversation can change willingness and leads, never the underlying record.
         choices = [{"id": "hide", "label": "保留内容"}, {"id": "refuse", "label": "拒绝继续"}]
         fallback = "refuse" if trust < 0 else "hide"
-        if asking and record_id in receiver["known"] and record_id in role["disclosure"]:
+        if asking and self._may_disclose(target, record_id):
             choices.append({"id": "disclose", "label": "向询问者转述已知内容"})
             if trust > 0:
                 fallback = "disclose"
@@ -344,37 +350,69 @@ class Dialogue:
                     "text": f"我把《{record['name']}》中知道的情况转告了{target}。"}
         return self._failure(actor, topic, receipt, f"我联系了{target}，对方没有提供这件事的内容。")
 
-    def _followup(self, actor, topic, origin, cause):
+    def _inquire(self, actor, topic, cause):
+        role = self.state["roles"][actor]
+        replies = []
+        if role["relations"].get(PLAYER, 0) >= 0:
+            for record_id in self.case["roles"][actor]["disclosure"]:
+                record = self.case["records"][record_id]
+                if record["topic"] != topic or not self._may_disclose(actor, record_id):
+                    continue
+                reply = f"《{record['name']}》中的说法是“{record['text']}”"
+                self._event("statement", actor, PLAYER, record_id, (actor, PLAYER),
+                            {"text": reply, "classification": "claim", "original_source": record["name"]},
+                            role["known"][record_id] or cause)
+                replies.append(reply)
+        if replies:
+            return "\n".join(replies)
+        reply = "这件事我没有可以直接告诉你的记录。"
+        self._event("statement", actor, PLAYER, topic, (actor, PLAYER),
+                    {"text": reply, "classification": "claim"}, cause)
+        return reply
+
+    def _followup(self, actor, topic, kind, cause):
         configuration = self.case["followups"].get(topic, {}).get(actor, {})
-        receipts = [e for e in self.state["events"] if e["kind"] == "reception" and e["actor"] == actor
-                    and e["source"] == topic]
-        last = receipts[-1] if receipts and configuration.get("receipt") else None
-        previous = next(
-            (event for event in reversed(self.state["events"]) if event["kind"] == "report"
-             and event["actor"] == actor and event["result"]["topic"] == topic), None,
-        )
+        receipt = None
+        report = None
+        receipt_visible = False
+        for event in reversed(self.state["events"]):
+            if event["actor"] != actor:
+                continue
+            if (receipt is None and configuration.get("receipt") and event["kind"] == "reception"
+                    and event["source"] == topic):
+                receipt = event
+                receipt_visible = receipt["result"]["stance"] in ("accept", "question", "disclose")
+                if receipt_visible or kind == "receipt":
+                    break
+            if (report is None and kind != "receipt" and event["kind"] == "report"
+                    and event["result"]["topic"] == topic):
+                report = event
+                if kind == "followup":
+                    break
+
         parent = cause
         public_receipt = False
-        if last is not None and last["result"]["stance"] not in (None, "hide", "refuse"):
-            parent = last["id"]
-            receipt_disclosed = any(event["kind"] == "statement" and event["cause"] == last["id"]
-                                    and event["result"].get("receipt") for event in self.state["events"])
-            if origin and configuration.get("origin_requires_statement") and not receipt_disclosed:
-                reply = "请先问我这方面收到过什么消息。"
-            elif origin:
-                reply = f"据我亲历，是{last['recipient']}联系我的。这是我的陈述。"
-            elif last["result"]["stance"] == "question":
+        if receipt_visible:
+            parent = receipt["id"]
+            if kind == "origin":
+                disclosed = any(event["kind"] == "statement" and event["cause"] == parent
+                                and event["result"].get("receipt") for event in self.state["events"])
+                if configuration.get("origin_requires_statement") and not disclosed:
+                    reply = "请先问我这方面收到过什么消息。"
+                else:
+                    reply = f"据我亲历，是{receipt['recipient']}联系我的。这是我的陈述。"
+            elif receipt["result"]["stance"] == "question":
                 public_receipt = True
                 reply = configuration.get("question", "我收到一项说法，仍需核对。你可以向我追问是从哪儿来的。")
-            elif last["result"]["stance"] == "accept":
+            elif receipt["result"]["stance"] == "accept":
                 public_receipt = True
                 reply = configuration.get("accept", "有人提供了线索，我愿意暂时采信。你可以再问我来源。")
             else:
                 public_receipt = True
                 reply = configuration.get("disclose", "有人托我查过。你可以再问我是谁提出的。")
-        elif previous is not None:
-            parent = previous["id"]
-            reply = previous["result"]["text"]
+        elif report is not None:
+            parent = report["id"]
+            reply = report["result"]["text"]
         else:
             reply = configuration.get("baseline", "我目前没有可以转述的这方面进展。")
         # Even when an underlying report points to a record, this event is a character's statement.

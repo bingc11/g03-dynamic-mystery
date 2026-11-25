@@ -83,3 +83,11 @@ node tools/browser_delegation.cjs
 - 云端项目模型配置复核仍无授权凭据，真实 LLM 未验证。
 
 仓库连接取得写权限后，验收代码和报告已推送到第二轮 Draft PR。创建时核对头部 `0b72db9ba09e12e6dcbcf496be897537b9318f63`，目标分支头部 `548d31a038a6067da852a82a47cdfdaf43e2cead`。[第二轮 Draft PR](https://github.com/bingc11/g03-dynamic-mystery/pull/2)
+
+## 第二轮审查回归
+
+在 `4d4369c5055803c2a3c4288f002d323624e1f9eb` 复现两条审查问题。新局直接问阮岑“昨晚西门谁进过仓库？”曾误返回联络状态。御史大夫核对副册后，旧联络也曾遮住最新结果。
+
+- `python -m unittest discover -s tests -v` 通过 19 项。新增回归检查直接作证的来源、披露权限、进展回报与联络来源，以及多种问结果的表达会取回原回报。
+- `python tools/check_delegation.py` 在完整 FastAPI 复验通过，从 PID 8305 重启到 8310。6 路并发恢复得到同一终态，私聊和回报均落库一次。
+- 用现有生产前端和隔离的 FastAPI 实例跑过完整 Chromium 双案回归。专项浏览器验证了阮岑直接提供证词，宋屿无法代答，以及御史能同时提供最新副册回报和已获准追问的旧联络来源。

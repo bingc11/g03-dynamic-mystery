@@ -18,6 +18,64 @@ class RecordingDecisions(Decisions):
 
 
 class DialogueTests(unittest.TestCase):
+    def test_direct_witness_question_returns_only_authorized_testimony(self):
+        case = load_case("harbor_blackout")
+        state = new_state(case)
+        game = Dialogue(case, state, Decisions("mock"))
+        status_question = "有人查过西门出入吗？"
+        before = game.submit("status-before", "阮岑", status_question)
+        self.assertIn("还没人来找我", before["reply"])
+
+        question = "昨晚西门谁进过仓库？"
+        direct = game.submit("direct", "阮岑", question)
+        self.assertTrue(direct["handled"])
+        self.assertIn("二十一点四十六分", direct["reply"])
+        self.assertIn("没看清脸", direct["reply"])
+        self.assertNotIn("罗钧", direct["reply"])
+        statement = state["events"][-1]
+        self.assertEqual(statement["kind"], "statement")
+        self.assertEqual(statement["source"], "gate_witness")
+        self.assertEqual(statement["result"]["classification"], "claim")
+        self.assertEqual(statement["result"]["original_source"], case["records"]["gate_witness"]["name"])
+        self.assertCountEqual(statement["audience"], ["阮岑", PLAYER])
+
+        outsider = game.submit("outsider", "宋屿", question)
+        self.assertTrue(outsider["handled"])
+        self.assertNotIn("二十一点四十六分", outsider.get("reply", ""))
+        self.assertNotIn("没看清脸", outsider.get("reply", ""))
+        after = game.submit("status-after", "阮岑", status_question)
+        self.assertEqual(after["reply"], before["reply"])
+        self.assertFalse(state["tasks"])
+        self.assertFalse(any(event["kind"] in ("private_question", "object_read") for event in state["events"]))
+
+    def test_result_question_prefers_settled_report_and_preserves_contact_provenance(self):
+        case = load_case("example_4")
+        state = new_state(case)
+        game = Dialogue(case, state, Decisions("mock"))
+        contact = game.submit("contact", "太平公主", "劳烦你向御史打听一下宫闱秘录的借阅登记。")
+        game.resume(contact["task"]["id"])
+        inspection = game.submit("inspection", "御史大夫", "请帮我对一对宫闱秘录的借阅登记。")
+        settled = game.resume(inspection["task"]["id"])
+        self.assertEqual(settled["task"]["status"], "completed")
+
+        result = game.submit("result", "御史大夫", "秘录登记核对结果是什么？")
+        self.assertIn("出库栏均无签押", result["reply"])
+        self.assertNotIn("有人托我核对过", result["reply"])
+        statement = state["events"][-1]
+        report = state["tasks"][settled["task"]["id"]]["result"]
+        self.assertEqual(statement["cause"], report)
+        self.assertEqual(statement["result"]["classification"], "claim")
+
+        origin_question = "谁来问过秘录登记？"
+        early_origin = game.submit("origin-before-status", "御史大夫", origin_question)
+        self.assertIn("请先问我", early_origin["reply"])
+        status = game.submit("status", "御史大夫", "有人查过秘录登记吗？")
+        self.assertIn("有人托我核对过", status["reply"])
+        origin = game.submit("origin-after-status", "御史大夫", origin_question)
+        self.assertIn("据我亲历，是太平公主", origin["reply"])
+        reception = next(event for event in state["events"] if event["kind"] == "reception")
+        self.assertEqual(state["events"][-1]["cause"], reception["id"])
+
     def test_same_evidence_three_roles_choose_using_their_goals_and_permissions(self):
         case = load_case("example_4")
         evidence = "evidence_manuscript_missing"

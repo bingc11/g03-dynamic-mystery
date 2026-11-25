@@ -40,9 +40,26 @@ ASSIGN = (
 )
 INQUIRY = (
     "你知道", "知不知道", "有没有", "见过", "听说", "什么", "哪", "谁", "怎样", "如何",
-    "怎么", "何时", "是否", "吗", "可曾", "查过", "问过", "来过", "消息", "情况", "线索",
-    "结果", "说说", "讲讲", "告诉我", "any news", "tell me", "what", "who", "which",
+    "怎么", "何时", "是否", "吗", "可曾", "来过", "消息", "情况", "线索",
+    "说说", "讲讲", "告诉我", "tell me", "what", "who", "which",
     "when", "where", "why", "how", "do you", "did you", "have you",
+)
+PROGRESS = (
+    "进展", "结果", "有消息", "新消息", "查过", "查到", "查得", "查出", "问过", "问到",
+    "核对过", "核对好", "核对完", "核查过", "核实过", "核实了", "已经找到",
+    "progress", "result", "results", "any news", "any updates", "checked", "found out",
+    "looked into",
+)
+RESULT_QUESTION = ("是什么", "怎么样", "什么结果", "有没有结果", "有结果吗", "了吗", "了没")
+THIRD_PARTY = ("有人", "别人", "其他人", "anyone", "anybody", "someone", "somebody", "others")
+CONTACT_HISTORY = (
+    "问过", "来问", "问你", "提过", "提起", "提及", "找过你", "来找你", "联系", "打听",
+    "查过", "来查", "核对过", "核查过", "托你", "来托", "传话", "说起", "说过", "告诉你",
+    "ask", "asked", "contact", "contacted", "mention", "mentioned", "check", "checked", "brought up",
+    "tell", "told", "informed",
+)
+RECEIPT = (
+    "受过委托", "接受过委托", "被问过", "been asked", "been contacted", "get any messages",
 )
 ORIGIN = (
     "来源", "出处", "来路", "从何", "从谁", "哪儿听", "从哪", "怎么知道", "如何得知",
@@ -138,12 +155,15 @@ def classify(view: dict) -> str:
     contact = _has(text, CONTACT)
     proxy = _has(text, PROXY)
     assignment = _has(text, ASSIGN)
+    progress = _has(text, PROGRESS)
+    result_question = progress and ("?" in text or _has(text, RESULT_QUESTION))
+    bare_command = not result_question and (text.startswith(INSPECT) or bool(_REPEATED_ACTION.match(text)))
     delegation = _has(text, OUTBOUND)
     if not _has(text, DIRECT_INQUIRY):
         delegation = (
             delegation
             or (proxy and (action or contact or _has(text, ("查", "问", "找"))))
-            or (action and (assignment or text.startswith(INSPECT) or _REPEATED_ACTION.match(text)))
+            or (action and (assignment or bare_command))
             or (assignment and _has(text, ("请你查", "请你问", "请你找", "能不能查", "能否查")))
         )
     delegation = delegation and not _has(text, ("不必", "不用", "别去", "别查", "don't", "no need to"))
@@ -172,19 +192,34 @@ def classify(view: dict) -> str:
     if delegation or clarification:
         return f"delegate:{topic_id}" if topic_id else "clarify"
 
-    if not topic_id and (origin or _has(text, ("查到了", "问到了", "有什么结果", "any news"))):
+    receipt = (
+        _has(text, RECEIPT)
+        or (_has(text, THIRD_PARTY) and _has(text, CONTACT_HISTORY))
+        or (_has(text, ("收到", "received")) and _has(text, ("消息", "询问", "委托", "news", "message", "messages")))
+    )
+    if not topic_id and (origin or receipt or progress):
         observed = view.get("observed_topics", ())
         if len(observed) == 1:
             topic_id = observed[0]
-    if topic_id and (origin or contact or _has(text, INQUIRY) or "?" in text):
-        return f'{"origin" if origin else "followup"}:{topic_id}'
+    if topic_id:
+        if origin:
+            return f"origin:{topic_id}"
+        if receipt:
+            return f"receipt:{topic_id}"
+        if progress:
+            return f"followup:{topic_id}"
+        if contact or _has(text, INQUIRY) or "?" in text:
+            return f"inquire:{topic_id}"
     return "chat"
 
 
 _PURPOSES = {
     "intent": (
         "理解自然语言及前一轮澄清。只有当调查者要求角色替其联系他人或核查对象时才选 delegate。"
-        "询问角色已经知道的结果选 followup，追问来源选 origin，委托未说明对象时选 clarify。"
+        "直接询问角色看到了什么、知道些什么或材料写了什么时选 inquire。"
+        "询问委托进展或调查结果时选 followup，询问别人是否来询问、联系或提起此事时选 receipt。"
+        "“核对的结果是什么”询问既有结果。要求核对后回报是新委托。"
+        "追问来源选 origin，委托未说明对象时选 clarify。"
         "一般对话选 chat。视图中的 topics 只列出公开可询问的主题。"
     ),
     "plan": "根据角色当前目标、关系、所知信息和行动收益提议下一步。可接受、拒绝、等待或提议其他合法行动。",

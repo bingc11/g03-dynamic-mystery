@@ -50,7 +50,7 @@ class DecisionTests(unittest.TestCase):
             ("example_4", "雨夜原簿", "", (), "delegate:archive"),
             ("example_4", "我说的是雨夜里那本归档原簿。", "", (), "delegate:archive"),
             ("example_4", "请你查之前谁来过", None, (), "clarify"),
-            ("example_4", "有人查过秘录登记吗？", None, (), "followup:registry"),
+            ("example_4", "有人查过秘录登记吗？", None, (), "receipt:registry"),
             ("example_4", "谁来问过秘录登记？", None, (), "origin:registry"),
             ("example_4", "谁来问过你这件事？", None, ("registry",), "origin:registry"),
             ("harbor_blackout", "有谁来打听过昨晚西门的出入吗？", None, (), "origin:gate"),
@@ -58,6 +58,39 @@ class DecisionTests(unittest.TestCase):
         ]:
             with self.subTest(text=text):
                 self.assertEqual(classify(view(case, text, pending, observed)), expected)
+
+    def test_witness_inquiries_and_investigation_updates_use_distinct_intents(self):
+        for case, text, observed, expected in [
+            ("harbor_blackout", "昨晚西门谁进过仓库？", (), "inquire:gate"),
+            ("harbor_blackout", "昨晚哪些人从西门进出，你有看到吗？", ("gate",), "inquire:gate"),
+            ("example_4", "秘录登记写了什么？", (), "inquire:registry"),
+            ("harbor_blackout", "有人提过监控时间的误差吗？", (), "receipt:timing"),
+            ("harbor_blackout", "收到关于西门出入的新消息了吗？", (), "receipt:gate"),
+            ("harbor_blackout", "之前有人来问过吗？", ("gate",), "receipt:gate"),
+            ("harbor_blackout", "西门的出入有消息吗？", (), "followup:gate"),
+            ("harbor_blackout", "有什么结果了吗？", ("gate",), "followup:gate"),
+        ]:
+            with self.subTest(text=text):
+                self.assertEqual(classify(view(case, text, observed=observed)), expected)
+
+        topics = [{"id": "gate", "label": "West gate entries", "aliases": ["west gate"]}]
+        self.assertEqual(classify({"text": "Who entered through the west gate?", "topics": topics}), "inquire:gate")
+        self.assertEqual(classify({"text": "Any updates on the west gate?", "topics": topics}), "followup:gate")
+        self.assertEqual(classify({"text": "Did anyone ask about the west gate?", "topics": topics}), "receipt:gate")
+        self.assertEqual(classify({"text": "Did anyone tell you about the west gate?", "topics": topics}), "receipt:gate")
+        self.assertEqual(classify({"text": "Who contacted you about the west gate?", "topics": topics}), "origin:gate")
+
+    def test_result_questions_do_not_start_another_investigation(self):
+        for text, expected in [
+            ("核对秘录登记的结果是什么？", "followup:registry"),
+            ("核实秘录登记有什么结果吗？", "followup:registry"),
+            ("你核查秘录登记查出什么了吗？", "followup:registry"),
+            ("核实秘录登记的结果是什么", "followup:registry"),
+            ("请核对秘录登记，查到结果再告诉我。", "delegate:registry"),
+            ("查一下秘录登记。", "delegate:registry"),
+        ]:
+            with self.subTest(text=text):
+                self.assertEqual(classify(view("example_4", text)), expected)
 
     @patch("npc_decisions._configured", return_value=True)
     @patch("npc_decisions._model_request")

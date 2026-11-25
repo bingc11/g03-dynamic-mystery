@@ -17,3 +17,5 @@
 下一轮以用户在当前任务中的明确指令或用户指定 Issue 中的指令为准。普通提交、PR 更新和其他人的评论用于同步与本轮审查。
 
 自动唤醒只使用 GitHub 的 PR 新建和提交更新事件。连接器已覆盖本仓库，当前 Codex Cloud 任务仍缺少绑定事件订阅的入口，未启用定时轮询。
+
+GitHub `@codex` 实现入口的独立复验仍需配置本仓库可用的 Codex Cloud Legacy 环境，应以实际任务链接和运行记录核对启动结果。继续这条任务的现有工作区时，使用原 Codex 对话。[环境设置](https://chatgpt.com/codex/cloud/settings/environments)
