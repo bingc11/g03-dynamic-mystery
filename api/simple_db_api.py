@@ -1,6 +1,7 @@
 # 简化的数据库API
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
+from npc_dialogue import load_case
 from simple_db import simple_db
 
 router = APIRouter()
@@ -27,7 +28,9 @@ async def save_script_simple(script_data: Dict[str, Any]):
 async def list_scripts_simple():
     """获取所有剧本列表"""
     try:
-        scripts = simple_db.get_all_scripts()
+        # Managed cases are served from their public client package and NPC API.
+        # Pre-upgrade saves may still contain the old, complete case material.
+        scripts = [script for script in simple_db.get_all_scripts() if load_case(script["id"]) is None]
         
         return {
             "success": True,
@@ -41,6 +44,8 @@ async def list_scripts_simple():
 async def get_script_simple(script_id: str):
     """获取指定剧本"""
     try:
+        if load_case(script_id) is not None:
+            raise HTTPException(status_code=404, detail="本案由调查服务提供")
         script = simple_db.get_script(script_id)
         
         if script:
