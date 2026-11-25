@@ -71,8 +71,12 @@ class Dialogue:
         self.player = player
         self.seat = state["players"][player]
         budget = state.setdefault("model", {})
-        self.initial_fallbacks = budget.get("fallbacks", 0)
         self.decisions = decisions if decisions is not None else Decisions(runtime=budget)
+        self._begin_turn()
+
+    def _begin_turn(self):
+        self.turn_start = len(self.state["events"])
+        self.initial_fallbacks = self.state["model"].get("fallbacks", 0)
 
     def register_player(self, player_id, name):
         players = self.state["players"]
@@ -163,11 +167,11 @@ class Dialogue:
         driver = self._display_driver(driver)
         turn = {"id": request_id, "actor": actor, "text": text, "reply": reply, "driver": driver,
                 "player": self.player}
-        if self.state["events"]:
-            event = self.state["events"][-1]
-            if self.player in event["audience"]:
-                turn.update(source=event["source"], source_name=self._source_name(event["source"]),
-                            classification=event["result"].get("classification"), event_id=event["id"])
+        event = next((item for item in reversed(self.state["events"][self.turn_start:])
+                      if self.player in item["audience"]), None)
+        if event is not None:
+            turn.update(source=event["source"], source_name=self._source_name(event["source"]),
+                        classification=event["result"].get("classification"), event_id=event["id"])
         self.state["turns"][request_id] = turn
         outcome = {"handled": True, "reply": reply, "driver": driver, "turn": self._turn_view(turn)}
         if task:
@@ -207,14 +211,19 @@ class Dialogue:
         ]
 
     def submit(self, request_id, actor, text, evidence=None):
+        self._begin_turn()
         if self.seat["solved"]:
             raise ValueError("你已结案，可以继续查看复盘")
         if actor not in self.state["roles"]:
             raise ValueError("案件中没有这个调查对象")
         if evidence is not None:
             return self._show(request_id, actor, text, evidence)
-        topics = [{"id": key, "label": topic["label"], "aliases": topic["aliases"]}
-                  for key, topic in self.case["topics"].items()]
+        topics = [
+            {"id": key, "label": topic["label"], "aliases": topic["aliases"],
+             "role_action_labels": [self.case["actions"][action_id]["label"] for action_id in topic["options"]
+                                    if self._allows(actor, self.case["actions"][action_id])]}
+            for key, topic in self.case["topics"].items()
+        ]
         candidates = [{"id": "chat", "label": "普通对话"}, {"id": "clarify", "label": "委托目标需要澄清"}]
         for topic in topics:
             candidates.extend([
@@ -334,6 +343,7 @@ class Dialogue:
         return self._reply(request_id, actor, text, acknowledgement, driver, task)
 
     def resume(self, task_id):
+        self._begin_turn()
         task = self.state["tasks"].get(task_id)
         if task is None or task["requester"] != self.player:
             raise KeyError(task_id)
@@ -629,6 +639,7 @@ class Dialogue:
                            for event in visible]}
 
     def assist(self, level, query=""):
+        self._begin_turn()
         if level == "answer":
             if not self.seat["solved"]:
                 raise ValueError("请先提交正确的结案推理")

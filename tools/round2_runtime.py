@@ -60,7 +60,9 @@ def serve_api(data_dir, port, fixture_port, *, live=False):
     if live:
         env.pop("PYTHON_DOTENV_DISABLED")
         env.update(INFERENCE_SERVICE="deepseek", NPC_DECISION_MODE="llm")
-        for key in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL", "DEEPSEEK_MODEL"):
+        for key in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL", "DEEPSEEK_MODEL",
+                    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "SSL_CERT_FILE", "SSL_CERT_DIR",
+                    "http_proxy", "https_proxy", "all_proxy", "no_proxy"):
             if key in os.environ:
                 env[key] = os.environ[key]
     log_path = data_dir / "fastapi.log"

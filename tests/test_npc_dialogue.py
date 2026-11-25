@@ -18,6 +18,32 @@ class RecordingDecisions(Decisions):
 
 
 class DialogueTests(unittest.TestCase):
+    def test_duplicate_presentation_does_not_inherit_previous_turn_sources(self):
+        case = load_case("harbor_blackout")
+        state = new_state(case)
+        game = Dialogue(case, state, Decisions("mock"))
+        evidence = "harbor_work_order"
+        shown = game.submit("show", "阮岑", "给你看这份工单。", evidence)
+        self.assertEqual(shown["turn"]["source"], evidence)
+        duplicate = game.submit("duplicate", "阮岑", "这份工单给你再看一下。", evidence)
+        self.assertNotIn("source", duplicate["turn"])
+        with self.assertRaises(ValueError):
+            game.share("duplicate")
+
+    def test_new_guest_can_read_prior_public_clue_without_inheriting_private_history(self):
+        case = load_case("harbor_blackout")
+        state = new_state(case)
+        host = Dialogue(case, state, Decisions("mock"))
+        host.submit("direct", "阮岑", "昨晚西门谁进过仓库？")
+        shared = host.share("direct")["shared"]
+        host.register_player("$player:late", "合作调查员")
+        guest = Dialogue(case, state, Decisions("mock"), player="$player:late")
+        self.assertEqual(guest.public_state(), {"turns": [], "tasks": []})
+        replay = guest.replay()["events"]
+        self.assertEqual([event["id"] for event in replay], [shared["id"]])
+        self.assertEqual(replay[0]["view"], "prior_public")
+        self.assertIsNone(replay[0]["cause"])
+
     def test_direct_witness_question_returns_only_authorized_testimony(self):
         case = load_case("harbor_blackout")
         state = new_state(case)
