@@ -8,7 +8,7 @@
 | 按案件数据执行自主交流 | 完成，两套案件、三种角色行动和两种收件人结果已验收 |
 | 生产构建、浏览器、证据 | 完成，命令与复现见 [ACCEPTANCE.md](ACCEPTANCE.md) |
 
-真实 LLM 验收等待本项目授权模型配置。Draft PR 等待 ChatGPT Codex Connector 覆盖上游或已连接的可写 fork。届时将 `feature/scottishfold-delegation` 作为源分支，`feature/scottishfold-npc-actions` 作为目标分支。先按头部分支查找已有 PR；有对应 Draft PR 就更新，否则创建 Draft PR，并保持待审查。
+真实 LLM 验收等待本项目授权模型配置。第二轮已推送 `feature/scottishfold-delegation`，目标为 `feature/scottishfold-npc-actions`，Draft PR 保持待审查。[第二轮 Draft PR](https://github.com/bingc11/g03-dynamic-mystery/pull/2)
 
 ## 恢复和审查
 
@@ -16,4 +16,4 @@
 
 下一轮以用户在当前任务中的明确指令或用户指定 Issue 中的指令为准。普通提交、PR 更新和其他人的评论用于同步与本轮审查。
 
-自动唤醒只使用 GitHub 事件。目前这条 Codex Cloud 任务没有可配置的 GitHub 事件入口，连接器的安装范围也未授权本仓库。事件订阅仍待验证。
+自动唤醒只使用 GitHub 的 PR 新建和提交更新事件。连接器已覆盖本仓库，当前 Codex Cloud 任务仍缺少绑定事件订阅的入口，未启用定时轮询。

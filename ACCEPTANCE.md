@@ -81,3 +81,5 @@ node tools/browser_delegation.cjs
 - `cd web && npm run build`，退出 0，生成 `main.4c294d83.js`，393.72 kB gzip。原有 ESLint 警告仍在。
 - `python tools/round2_runtime.py --data-dir /workspace/scratch/g03-resume/browser-db` 配合上面的 Playwright 命令运行。两案从剧本库到结案均通过，雾港案的恢复请求被丢弃后刷新，游戏只显示一份回报。5 组新截图与轨迹复核了事件标识、父事件顺序以及私聊可见范围，事件数与仓库中的 5 组存档一致，分别为 14、18、46、11、38。
 - 云端项目模型配置复核仍无授权凭据，真实 LLM 未验证。
+
+仓库连接取得写权限后，验收代码和报告已推送到第二轮 Draft PR。创建时核对头部 `0b72db9ba09e12e6dcbcf496be897537b9318f63`，目标分支头部 `548d31a038a6067da852a82a47cdfdaf43e2cead`。[第二轮 Draft PR](https://github.com/bingc11/g03-dynamic-mystery/pull/2)
