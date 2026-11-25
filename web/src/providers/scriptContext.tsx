@@ -59,8 +59,12 @@ export const ScriptProvider: React.FC<ScriptProviderProps> = ({ children }) => {
         dbScripts.forEach(dbScript => {
           const existingIndex = mergedScripts.findIndex(ex => ex.id === dbScript.id);
           if (existingIndex >= 0) {
-            // 用数据库版本覆盖示例版本
-            mergedScripts[existingIndex] = dbScript;
+            const example = mergedScripts[existingIndex];
+            // Managed public scripts come from the packaged data. A cached
+            // database row from an earlier release can still contain spoilers.
+            if (example.npcManaged) return;
+            // 简化数据库的剧本列表省略证物字段，保留示例剧本自带的证物。
+            mergedScripts[existingIndex] = { ...dbScript, evidences: dbScript.evidences ?? example.evidences };
           } else {
             // 如果是新剧本，添加到列表
             mergedScripts.push(dbScript);
@@ -70,6 +74,7 @@ export const ScriptProvider: React.FC<ScriptProviderProps> = ({ children }) => {
 
         // 迁移：若缺少玩家/搭档/凶手，从示例模板补齐
         const ensureRolesFromExample = (script: Script): Script => {
+          if (script.npcManaged) return script;
           const example = exampleScripts.find(e => e.id === script.id);
           if (!example) return script;
 

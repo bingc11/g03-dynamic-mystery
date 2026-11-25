@@ -19,7 +19,7 @@ import {
   IconEye,
   IconRefresh
 } from '@tabler/icons-react';
-import { Evidence, EvidenceFilter, EvidenceStats } from '../../types/evidence';
+import { Evidence, EvidenceFilter, EvidenceStats, EvidenceInventory } from '../../types/evidence';
 import {
   loadEvidenceContext,
   getFilteredEvidences,
@@ -37,6 +37,7 @@ import { useScriptContext } from '../../providers/scriptContext';
 interface EvidenceLibraryPanelProps {
   sessionId: string;
   scriptId: string;
+  inventory?: EvidenceInventory;
   onEvidenceSelect?: (evidence: Evidence) => void;
   onEvidencePresent?: (evidence: Evidence) => void;
 }
@@ -44,6 +45,7 @@ interface EvidenceLibraryPanelProps {
 const EvidenceLibraryPanel: React.FC<EvidenceLibraryPanelProps> = ({
   sessionId,
   scriptId,
+  inventory,
   onEvidenceSelect,
   onEvidencePresent
 }) => {
@@ -243,12 +245,11 @@ const EvidenceLibraryPanel: React.FC<EvidenceLibraryPanelProps> = ({
         }
       }
       
-      const context = loadEvidenceContext(sessionId);
       const filteredEvidences = getFilteredEvidences(sessionId, {
         ...filter,
         searchQuery: searchQuery.trim() || undefined
-      });
-      const evidenceStats = getEvidenceStats(sessionId);
+      }, inventory);
+      const evidenceStats = getEvidenceStats(sessionId, inventory);
       
       setEvidences(filteredEvidences);
       setStats(evidenceStats);
@@ -282,7 +283,7 @@ const EvidenceLibraryPanel: React.FC<EvidenceLibraryPanelProps> = ({
     }, searchQuery ? 300 : 0); // 搜索时延迟300ms，其他情况立即执行
 
     return () => clearTimeout(timeoutId);
-  }, [sessionId, filter, searchQuery, victimAvatarFilename]);
+  }, [sessionId, filter, searchQuery, victimAvatarFilename, inventory]);
 
   // 清除过期的新标记
   useEffect(() => {

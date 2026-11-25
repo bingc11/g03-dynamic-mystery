@@ -1,0 +1,762 @@
+{
+  "driver": "rules",
+  "passed": true,
+  "scenario_count": 4,
+  "provider_attempt_limit": 0,
+  "provider_attempts": 0,
+  "legal_action_rate": 1.0,
+  "illegal_action_interception_rate": 1.0,
+  "source_and_cause_integrity_rate": 1.0,
+  "case_completion_rate": 1.0,
+  "scenario_clue_reach_rate": 1.0,
+  "verdict_correctness_rate": 1.0,
+  "task_distribution": {
+    "completed": 6,
+    "failed": 2,
+    "declined": 2,
+    "clarification": 1
+  },
+  "metrics": {
+    "role_knowledge_overreach": 0,
+    "event_limit_exceeded": 0,
+    "private_model_exposure": 0,
+    "repeat_settlements_checked": 8,
+    "duplicate_settlements": 0,
+    "private_player_exposure": 0,
+    "public_shares_checked": 4,
+    "public_share_errors": 0,
+    "premature_answers_blocked": 4,
+    "replay_or_assist_model_attempts": 0,
+    "verdicts_checked": 8,
+    "verdict_errors": 0,
+    "solved": 4,
+    "debrief_errors": 0,
+    "scenario_clues_required": 6,
+    "scenario_clues_reached": 6,
+    "canonical_truth_changed": 0,
+    "event_links_checked": 75,
+    "invalid_event_links": 0,
+    "duplicate_event_ids": 0,
+    "fact_claim_errors": 0,
+    "action_proposals": 19,
+    "legal_action_proposals": 19,
+    "sources_checked": 15,
+    "missing_sources": 0,
+    "private_contact_chains_with_followup": 2,
+    "real_private_contact_chains_with_followup": 0
+  },
+  "illegal_action_controls": {
+    "example_4": true,
+    "harbor_blackout": true
+  },
+  "scenarios": [
+    {
+      "case": "harbor_blackout",
+      "seed": "harbor-contact",
+      "input_relations": [],
+      "metrics": {
+        "role_knowledge_overreach": 0,
+        "event_limit_exceeded": 0,
+        "private_model_exposure": 0,
+        "repeat_settlements_checked": 2,
+        "duplicate_settlements": 0,
+        "private_player_exposure": 0,
+        "public_shares_checked": 1,
+        "public_share_errors": 0,
+        "premature_answers_blocked": 1,
+        "replay_or_assist_model_attempts": 0,
+        "verdicts_checked": 2,
+        "verdict_errors": 0,
+        "solved": 1,
+        "debrief_errors": 0,
+        "scenario_clues_required": 2,
+        "scenario_clues_reached": 2,
+        "canonical_truth_changed": 0,
+        "event_links_checked": 16,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "fact_claim_errors": 0,
+        "action_proposals": 3,
+        "legal_action_proposals": 3,
+        "sources_checked": 4,
+        "missing_sources": 0,
+        "private_contact_chains_with_followup": 1,
+        "real_private_contact_chains_with_followup": 0
+      },
+      "task_distribution": {
+        "completed": 2
+      },
+      "model": {
+        "attempts": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "input_budget_used": 0,
+        "output_budget_used": 0,
+        "latency_ms": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "rules_disabled": 7
+        },
+        "audit": [
+          {
+            "at": 1795613587.18,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inquire:gate"
+          },
+          {
+            "at": 1795613587.181,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:gate"
+          },
+          {
+            "at": 1795613587.181,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "ask_guard"
+          },
+          {
+            "at": 1795613587.181,
+            "purpose": "response",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "disclose"
+          },
+          {
+            "at": 1795613587.182,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "origin:gate"
+          },
+          {
+            "at": 1795613587.182,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:timing"
+          },
+          {
+            "at": 1795613587.182,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_reset"
+          }
+        ],
+        "attempt_failure_rate": null
+      },
+      "scenario_differences": [],
+      "step_wall_ms": [
+        52,
+        1,
+        1,
+        1
+      ],
+      "turns": [
+        {
+          "actor": "阮岑",
+          "input": "昨晚西门谁进过仓库？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "《阮岑对西门出入的陈述》中的说法是“二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。”"
+        },
+        {
+          "actor": "宋屿",
+          "input": "帮我去问问门卫昨晚谁进过仓库",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去向门卫阮岑问清昨晚西门的出入。\n\n我问过阮岑。对方就《阮岑对西门出入的陈述》告诉我：二十一点四十六分，我见到有人穿着编号 07 的反光背心从西门进了仓库。雾大，我没看清脸；时间是拿岗亭里的北塔标准钟记的。 这是对方的说法。"
+        },
+        {
+          "actor": "阮岑",
+          "input": "是谁来问过西门出入？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "据我亲历，是宋屿联系我的。这是我的陈述。"
+        },
+        {
+          "actor": "林遥",
+          "input": "替我核对这两份证词。",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去比对监控复电日志和北塔标准钟。\n\n我查阅了《北塔校时和监控复电日志》。已核查的记录：复电后比对结果显示监控时钟比北塔标准钟快八分钟。监控显示二十一点五十四分的时间应归为二十一点四十六分。"
+        }
+      ]
+    },
+    {
+      "case": "harbor_blackout",
+      "seed": "harbor-skeptical-witness",
+      "input_relations": [
+        [
+          "宋屿",
+          "林遥",
+          0
+        ],
+        [
+          "阮岑",
+          "宋屿",
+          -2
+        ]
+      ],
+      "metrics": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0,
+        "repeat_settlements_checked": 3,
+        "duplicate_settlements": 0,
+        "event_limit_exceeded": 0,
+        "private_player_exposure": 0,
+        "public_shares_checked": 1,
+        "public_share_errors": 0,
+        "premature_answers_blocked": 1,
+        "replay_or_assist_model_attempts": 0,
+        "verdicts_checked": 2,
+        "verdict_errors": 0,
+        "solved": 1,
+        "debrief_errors": 0,
+        "scenario_clues_required": 2,
+        "scenario_clues_reached": 2,
+        "canonical_truth_changed": 0,
+        "event_links_checked": 30,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "action_proposals": 9,
+        "legal_action_proposals": 9,
+        "sources_checked": 5,
+        "missing_sources": 0,
+        "fact_claim_errors": 0
+      },
+      "task_distribution": {
+        "failed": 1,
+        "completed": 2,
+        "declined": 1
+      },
+      "model": {
+        "attempts": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "input_budget_used": 0,
+        "output_budget_used": 0,
+        "latency_ms": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "rules_disabled": 14
+        },
+        "audit": [
+          {
+            "at": 1795613587.183,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:gate"
+          },
+          {
+            "at": 1795613587.183,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "ask_guard"
+          },
+          {
+            "at": 1795613587.183,
+            "purpose": "response",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "refuse"
+          },
+          {
+            "at": 1795613587.184,
+            "purpose": "reaction",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "tell_clock"
+          },
+          {
+            "at": 1795613587.184,
+            "purpose": "response",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "question"
+          },
+          {
+            "at": 1795613587.184,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "receipt:timing"
+          },
+          {
+            "at": 1795613587.185,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:supply"
+          },
+          {
+            "at": 1795613587.185,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "decline"
+          },
+          {
+            "at": 1795613587.185,
+            "purpose": "reaction",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "hold"
+          },
+          {
+            "at": 1795613587.185,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:supply"
+          },
+          {
+            "at": 1795613587.185,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_supply"
+          },
+          {
+            "at": 1795613587.186,
+            "purpose": "reaction",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "hold"
+          },
+          {
+            "at": 1795613587.186,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:freight"
+          },
+          {
+            "at": 1795613587.186,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_audit_receipt"
+          }
+        ],
+        "attempt_failure_rate": null
+      },
+      "scenario_differences": [],
+      "step_wall_ms": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "turns": [
+        {
+          "actor": "宋屿",
+          "input": "帮我去问问门卫昨晚谁进过仓库",
+          "driver": "rules",
+          "task_status": "failed",
+          "reply": "好，我去向门卫阮岑问清昨晚西门的出入。\n\n我联系了阮岑，对方没有提供这件事的内容。"
+        },
+        {
+          "actor": "林遥",
+          "input": "请看监控校时便条。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我看过监控校时便条了，会把它作为一条待查线索。"
+        },
+        {
+          "actor": "宋屿",
+          "input": "有人提过监控时间的误差吗？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我听说监控屏的时间可能有误差，暂时不合并两份证词。请林遥核对北塔校时和监控复电日志，再把两份证词放在一起看。"
+        },
+        {
+          "actor": "阮岑",
+          "input": "可以帮我翻翻七号背心的领用表吗？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我还缺核查所需的材料。请先给我看：停电检修工单。"
+        },
+        {
+          "actor": "阮岑",
+          "input": "请看停电检修工单。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我看过停电检修工单了，会把它作为一条待查线索。"
+        },
+        {
+          "actor": "阮岑",
+          "input": "可以帮我翻翻七号背心的领用表吗？",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去查阅西门夜班器具领用表。\n\n我查阅了《西门夜班器具领用表》。已核查的记录：编号 07 的反光背心和过磅间备用钥匙都登记由罗钧领取，夜班结束时没有归还签字。"
+        },
+        {
+          "actor": "宋屿",
+          "input": "请看半张过磅联。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我看过半张过磅联了，会把它作为一条待查线索。"
+        },
+        {
+          "actor": "宋屿",
+          "input": "请帮我核查夜航四号的送审底单。",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去凭过磅联上的单号向审计组核查待交件登记。\n\n我查阅了《审计组的待交件登记》。已核查的记录：程砚预约在次日早上递交夜航四号的两份过磅凭据，登记的核查事项为「申报重量高于实称重量」。"
+        }
+      ]
+    },
+    {
+      "case": "example_4",
+      "seed": "palace-contact",
+      "input_relations": [],
+      "metrics": {
+        "role_knowledge_overreach": 0,
+        "event_limit_exceeded": 0,
+        "private_model_exposure": 0,
+        "repeat_settlements_checked": 1,
+        "duplicate_settlements": 0,
+        "private_player_exposure": 0,
+        "public_shares_checked": 1,
+        "public_share_errors": 0,
+        "premature_answers_blocked": 1,
+        "replay_or_assist_model_attempts": 0,
+        "verdicts_checked": 2,
+        "verdict_errors": 0,
+        "solved": 1,
+        "debrief_errors": 0,
+        "scenario_clues_required": 1,
+        "scenario_clues_reached": 1,
+        "canonical_truth_changed": 0,
+        "event_links_checked": 12,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "fact_claim_errors": 0,
+        "action_proposals": 2,
+        "legal_action_proposals": 2,
+        "sources_checked": 2,
+        "missing_sources": 0,
+        "private_contact_chains_with_followup": 1,
+        "real_private_contact_chains_with_followup": 0
+      },
+      "task_distribution": {
+        "completed": 1
+      },
+      "model": {
+        "attempts": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "input_budget_used": 0,
+        "output_budget_used": 0,
+        "latency_ms": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "rules_disabled": 6
+        },
+        "audit": [
+          {
+            "at": 1795613587.188,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "receipt:registry"
+          },
+          {
+            "at": 1795613587.188,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:registry"
+          },
+          {
+            "at": 1795613587.188,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "consult_registry"
+          },
+          {
+            "at": 1795613587.188,
+            "purpose": "response",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "disclose"
+          },
+          {
+            "at": 1795613587.189,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "receipt:registry"
+          },
+          {
+            "at": 1795613587.189,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "origin:registry"
+          }
+        ],
+        "attempt_failure_rate": null
+      },
+      "scenario_differences": [],
+      "step_wall_ms": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "turns": [
+        {
+          "actor": "御史大夫",
+          "input": "有人查过秘录登记吗？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我还没有收到过关于这份登记的询问。"
+        },
+        {
+          "actor": "太平公主",
+          "input": "劳烦你向御史打听一下宫闱秘录的借阅登记。",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去向御史大夫查问秘录的借阅登记。\n\n我问过御史大夫。对方就《御史大夫对借阅登记的口头说明》告诉我：我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。 这是对方的说法。"
+        },
+        {
+          "actor": "御史大夫",
+          "input": "有人查过秘录登记吗？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "有人托我核对过这份登记。你可以再问我是谁提出的。"
+        },
+        {
+          "actor": "御史大夫",
+          "input": "谁来问过秘录登记？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "据我亲历，是太平公主联系我的。这是我的陈述。"
+        }
+      ]
+    },
+    {
+      "case": "example_4",
+      "seed": "palace-records",
+      "input_relations": [],
+      "metrics": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0,
+        "event_limit_exceeded": 0,
+        "repeat_settlements_checked": 2,
+        "duplicate_settlements": 0,
+        "private_player_exposure": 0,
+        "public_shares_checked": 1,
+        "public_share_errors": 0,
+        "premature_answers_blocked": 1,
+        "replay_or_assist_model_attempts": 0,
+        "verdicts_checked": 2,
+        "verdict_errors": 0,
+        "solved": 1,
+        "debrief_errors": 0,
+        "scenario_clues_required": 1,
+        "scenario_clues_reached": 1,
+        "canonical_truth_changed": 0,
+        "event_links_checked": 17,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "action_proposals": 5,
+        "legal_action_proposals": 5,
+        "sources_checked": 4,
+        "missing_sources": 0,
+        "fact_claim_errors": 0
+      },
+      "task_distribution": {
+        "completed": 1,
+        "failed": 1,
+        "clarification": 1,
+        "declined": 1
+      },
+      "model": {
+        "attempts": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "input_budget_used": 0,
+        "output_budget_used": 0,
+        "latency_ms": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "rules_disabled": 9
+        },
+        "audit": [
+          {
+            "at": 1795613587.19,
+            "purpose": "reaction",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "hold"
+          },
+          {
+            "at": 1795613587.19,
+            "purpose": "reaction",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_registry"
+          },
+          {
+            "at": 1795613587.19,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "clarify"
+          },
+          {
+            "at": 1795613587.191,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:registry"
+          },
+          {
+            "at": 1795613587.191,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_registry"
+          },
+          {
+            "at": 1795613587.192,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:archive"
+          },
+          {
+            "at": 1795613587.192,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "inspect_original"
+          },
+          {
+            "at": 1795613587.193,
+            "purpose": "intent",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "delegate:sealed"
+          },
+          {
+            "at": 1795613587.193,
+            "purpose": "plan",
+            "driver": "rules",
+            "status": "rules_disabled",
+            "fallback": false,
+            "candidate_id": "decline"
+          }
+        ],
+        "attempt_failure_rate": null
+      },
+      "scenario_differences": [],
+      "step_wall_ms": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "turns": [
+        {
+          "actor": "张昌宗",
+          "input": "请看遗失的宫闱秘录。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我看过这份记录了，仅凭遗失登记无法确定是谁取走了原件。"
+        },
+        {
+          "actor": "御史大夫",
+          "input": "请看遗失的宫闱秘录。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我看过这份记录了，仅凭遗失登记无法确定是谁取走了原件。"
+        },
+        {
+          "actor": "太平公主",
+          "input": "能不能替我查一件事？",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "你想让我联系哪位人物，或核对哪一份材料？"
+        },
+        {
+          "actor": "御史大夫",
+          "input": "请帮我对一对宫闱秘录的借阅登记。",
+          "driver": "rules",
+          "task_status": "completed",
+          "reply": "好，我去核对御史台副册的出库栏。\n\n我查阅了《御史台副册》。已核查的记录：御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。"
+        },
+        {
+          "actor": "太平公主",
+          "input": "麻烦翻一翻雨夜那份原簿。",
+          "driver": "rules",
+          "task_status": "failed",
+          "reply": "好，我去调阅雨夜归档原簿。\n\n我去核对了雨夜归档原簿，当时无法调取原件。"
+        },
+        {
+          "actor": "武惠妃",
+          "input": "劳烦你核查一下封存的内廷名册。",
+          "driver": "rules",
+          "task_status": null,
+          "reply": "我现在还不愿意替你查这件事。"
+        }
+      ]
+    }
+  ]
+}

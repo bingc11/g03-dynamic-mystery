@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Badge } from '@mantine/core';
-import { IconNotes, IconEye } from '@tabler/icons-react';
+import { IconNotes, IconEye, IconListDetails } from '@tabler/icons-react';
 import EnhancedNotesPanel from './EnhancedNotesPanel';
 import EvidenceLibraryPanel from './evidence/EvidenceLibraryPanel';
 import { getEvidenceStats } from '../utils/evidenceManager';
 import { Evidence } from '../types/evidence';
+import { useNpcActions } from '../providers/npcActions';
+import InvestigationPanel from './InvestigationPanel';
 
 interface TabbedRightPanelProps {
   sessionId: string;
@@ -23,14 +25,17 @@ const TabbedRightPanel: React.FC<TabbedRightPanelProps> = ({
   onEvidenceSelect,
   onEvidencePresent
 }) => {
+  const npc = useNpcActions();
+  const inventory = npc?.inventory;
   const [activeTab, setActiveTab] = useState<string>('notes');
   const [newEvidenceCount, setNewEvidenceCount] = useState(0);
+  const tabs = npc?.managed ? ['notes', 'evidence', 'investigation'] : ['notes', 'evidence'];
 
   // 加载证物统计，检查是否有新证物
   useEffect(() => {
     const loadEvidenceStats = () => {
       try {
-        const stats = getEvidenceStats(sessionId);
+        const stats = getEvidenceStats(sessionId, inventory);
         // 只有当数量真正变化时才更新状态，避免不必要的重新渲染
         setNewEvidenceCount(prevCount => {
           return prevCount !== stats.newEvidences ? stats.newEvidences : prevCount;
@@ -45,19 +50,19 @@ const TabbedRightPanel: React.FC<TabbedRightPanelProps> = ({
     // 减少轮询频率，从5秒改为10秒
     const interval = setInterval(loadEvidenceStats, 10000);
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [sessionId, inventory]);
 
   // 从localStorage恢复上次选择的Tab
   useEffect(() => {
     const savedTab = localStorage.getItem(`rightPanel_activeTab_${sessionId}`);
-    if (savedTab && ['notes', 'evidence'].includes(savedTab)) {
+    if (savedTab && (savedTab === 'notes' || savedTab === 'evidence' || (savedTab === 'investigation' && npc?.managed))) {
       setActiveTab(savedTab);
     }
-  }, [sessionId]);
+  }, [sessionId, npc?.managed]);
 
   // 保存Tab选择状态
   const handleTabChange = (value: string | null) => {
-    if (value && ['notes', 'evidence'].includes(value)) {
+    if (value && tabs.includes(value)) {
       setActiveTab(value);
       localStorage.setItem(`rightPanel_activeTab_${sessionId}`, value);
       
@@ -127,6 +132,11 @@ const TabbedRightPanel: React.FC<TabbedRightPanelProps> = ({
           >
             证物库
           </Tabs.Tab>
+          {npc?.managed && (
+            <Tabs.Tab value="investigation" leftSection={<IconListDetails size={16} />}>
+              调查记录
+            </Tabs.Tab>
+          )}
         </Tabs.List>
 
         <Tabs.Panel value="notes" style={{ height: '100%', overflow: 'auto' }}>
@@ -141,10 +151,16 @@ const TabbedRightPanel: React.FC<TabbedRightPanelProps> = ({
           <EvidenceLibraryPanel
             sessionId={sessionId}
             scriptId={scriptId}
+            inventory={inventory}
             onEvidenceSelect={onEvidenceSelect}
             onEvidencePresent={onEvidencePresent}
           />
         </Tabs.Panel>
+        {npc?.managed && (
+          <Tabs.Panel value="investigation" style={{ height: '100%', overflow: 'auto' }}>
+            <InvestigationPanel />
+          </Tabs.Panel>
+        )}
       </Tabs>
     </div>
   );

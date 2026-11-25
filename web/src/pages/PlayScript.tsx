@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { NpcActions } from '../providers/npcActions';
 import { Button, Text, Container, Alert } from '@mantine/core';
 
@@ -10,10 +10,12 @@ import Home from './Home';
 const PlayScript: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentScript, loadScript } = useScriptContext();
+  const { key: playthrough, search } = useLocation();
+  const invite = new URLSearchParams(search).get('invite') || undefined;
+  const { currentScript, loadScript, scripts } = useScriptContext();
   const { setActors, setGlobalStory } = useMysteryContext();
   
-  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ const PlayScript: React.FC = () => {
   }, [id, loadScript]);
 
   useEffect(() => {
-    if (currentScript) {
+    if (currentScript && currentScript.id === id) {
       try {
         // 将剧本数据转换为游戏格式
         const actors = currentScript.characters.reduce((acc, character, index) => {
@@ -55,11 +57,10 @@ const PlayScript: React.FC = () => {
 
         setActors(actors);
         setGlobalStory(currentScript.globalStory);
-        setLoading(false);
+        setLoaded(playthrough + ':' + id);
         
         // 🔍 调试：输出所有角色信息
         console.log('📚 剧本加载完成，角色数量:', Object.keys(actors).length);
-        console.log('🎭 所有角色信息:', actors);
         // console.log('🎨 角色背景图片汇总:', Object.values(actors).map(actor => ({
         //   name: actor.name,
         //   backgroundImage: actor.backgroundImage
@@ -72,16 +73,15 @@ const PlayScript: React.FC = () => {
         }
       } catch (err) {
         setError('加载剧本失败');
-        setLoading(false);
       }
     }
-  }, [currentScript, setActors, setGlobalStory]);
+  }, [currentScript, id, playthrough, setActors, setGlobalStory]);
 
   const handleBack = () => {
     navigate('/library');
   };
 
-  if (loading) {
+  if (!error && (!scripts.length || (scripts.some(script => script.id === id) && loaded !== playthrough + ':' + id))) {
     return (
       <Container size="lg" py="xl" style={{ textAlign: 'center' }}>
         <Text>加载剧本中...</Text>
@@ -106,7 +106,7 @@ const PlayScript: React.FC = () => {
     );
   }
 
-  if (!currentScript) {
+  if (!currentScript || currentScript.id !== id) {
     return (
       <Container size="lg" py="xl">
         <Alert
@@ -143,7 +143,9 @@ const PlayScript: React.FC = () => {
       </div>
 
       {/* 使用现有的游戏界面 */}
-      <NpcActions key={currentScript.id} caseId={currentScript.id}><Home /></NpcActions>
+      <NpcActions key={loaded} caseId={currentScript.id} playthrough={playthrough} invite={invite}>
+        <Home />
+      </NpcActions>
     </div>
   );
 };

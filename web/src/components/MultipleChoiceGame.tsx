@@ -9,6 +9,8 @@ interface MultipleChoiceGameProps {
   onResumeGame: () => void;
   questions?: QuizQuestion[]; // 若不传则回退到旧的默认题面（向后兼容）
   script?: Script | null; // 当前剧本信息，用于获取凶手和动机
+  verdictOptions?: { suspects: string[]; motives: string[] };
+  checkVerdict?: (suspect: string, motive: string) => Promise<{ correct: boolean; message: string }>;
 }
 
 // 旧的内置题面（安达山案），用于兼容历史逻辑
@@ -27,11 +29,16 @@ const legacyQuestions: QuizQuestion[] = [
   }
 ];
 
-const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, onResumeGame, questions, script }) => {
+const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({
+  onBackToGame, onResumeGame, questions, script, verdictOptions, checkVerdict,
+}) => {
   const [stage, setStage] = useState<'killer' | 'motive' | 'failed' | 'generating'>('killer');
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [killerAnswer, setKillerAnswer] = useState<string>('');
   const [motiveOptions, setMotiveOptions] = useState<string[]>([]);
+  const [motiveIncorrect, setMotiveIncorrect] = useState(false);
+  const [verdictPending, setVerdictPending] = useState(false);
+  const [verdictError, setVerdictError] = useState('');
   const sessionId = useSessionContext();
 
   // 只有明确传入了questions且script为空时，才使用旧逻辑
@@ -46,7 +53,12 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
   // 获取当前剧本的凶手和角色列表
   const killer = script?.characters.find(c => c.isKiller);
   const allCharacters = script?.characters || [];
-  const characterNames = allCharacters.map(c => c.name);
+  const characterNames = verdictOptions?.suspects ?? allCharacters.map(c => c.name);
+  const candidateMotive = questions?.[1];
+  const authoredMotive = killer && questions?.[0]?.correctAnswer === killer.name
+    && candidateMotive?.correctAnswer && candidateMotive.choices.includes(candidateMotive.correctAnswer)
+    ? candidateMotive
+    : undefined;
 
   // 生成动机选项的函数
   const generateMotiveOptions = async (killerName: string) => {
@@ -118,14 +130,26 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
 
   // 新逻辑的事件处理
   const handleKillerSelection = () => {
-    if (!selectedChoice || !killer) return;
+    if (!selectedChoice) return;
+    if (verdictOptions && checkVerdict) {
+      setKillerAnswer(selectedChoice);
+      setMotiveOptions(verdictOptions.motives);
+      setSelectedChoice(null);
+      setStage('motive');
+      return;
+    }
+    if (!killer) return;
     
     setKillerAnswer(selectedChoice);
     
     // 检查是否答对凶手
     if (selectedChoice === killer.name) {
-      // 答对了，进入动机选择阶段
-      generateMotiveOptions(selectedChoice);
+      if (authoredMotive) {
+        setMotiveOptions(authoredMotive.choices);
+        setStage('motive');
+      } else {
+        generateMotiveOptions(selectedChoice);
+      }
     } else {
       // 答错了，显示"冤枉好人"
       setStage('failed');
@@ -134,10 +158,29 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
     setSelectedChoice(null);
   };
 
-  const handleMotiveSelection = () => {
-    if (!selectedChoice) return;
-    
-    // 检查动机是否正确（这里我们简化逻辑，任何选择都算对）
+  const handleMotiveSelection = async () => {
+    if (!selectedChoice || verdictPending) return;
+
+    if (checkVerdict && verdictOptions) {
+      setVerdictPending(true);
+      setVerdictError('');
+      try {
+        const result = await checkVerdict(killerAnswer, selectedChoice);
+        if (result.correct) onBackToGame([killerAnswer, selectedChoice]);
+        else setVerdictError(result.message);
+      } catch (error) {
+        setVerdictError(error instanceof Error ? error.message : '暂时无法送出推理，可以重试。');
+      } finally {
+        setVerdictPending(false);
+      }
+      return;
+    }
+
+    if (authoredMotive && selectedChoice !== authoredMotive.correctAnswer) {
+      setMotiveIncorrect(true);
+      return;
+    }
+
     const finalAnswers = [killerAnswer, selectedChoice];
     onBackToGame(finalAnswers);
   };
@@ -161,6 +204,8 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
   };
 
   const handleChoiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMotiveIncorrect(false);
+    setVerdictError('');
     setSelectedChoice(event.currentTarget.value);
   };
 
@@ -403,11 +448,15 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
             🎯 第二步：作案动机是什么？
           </Title>
           <Text style={{ textAlign: 'center', marginBottom: '20px', color: '#E0E0E0' }}>
-            凶手是：<span style={{ color: '#FFB74D', fontWeight: 'bold' }}>{killerAnswer}</span>
+            {checkVerdict ? '你指控的嫌疑人 ' : '凶手是：'}<span style={{ color: '#FFB74D', fontWeight: 'bold' }}>{killerAnswer}</span>
           </Text>
           <Text style={{ textAlign: 'center', marginBottom: '20px', color: '#B8B8B8' }}>
             请选择最符合剧情的作案动机
           </Text>
+          {motiveIncorrect && (
+            <Text role="alert" c="red" mb="md">这个动机和已知材料对不上，可以再想一想，或返回调查。</Text>
+          )}
+          {verdictError && <Text role="alert" c="red" mb="md">{verdictError}</Text>}
           <Stack>
             {motiveOptions.map((motive, index) => (
               <Radio
@@ -443,8 +492,9 @@ const MultipleChoiceGame: React.FC<MultipleChoiceGameProps> = ({ onBackToGame, o
           </Stack>
           <br></br>
           <Button
-            onClick={handleMotiveSelection}
-            disabled={!selectedChoice}
+            onClick={() => void handleMotiveSelection()}
+            disabled={!selectedChoice || verdictPending}
+            loading={verdictPending}
             styles={{
               root: {
                 width: '100%',

@@ -16,11 +16,13 @@ import { QuizQuestion } from '../types/script';
 import TabbedRightPanel from '../components/TabbedRightPanel';
 import { ensureEvidencesInitialized } from '../utils/evidenceManager';
 import { Evidence } from '../types/evidence';
-import { tracksEvidence, useNpcActions } from '../providers/npcActions';
+import { useNpcActions } from '../providers/npcActions';
 
 export default function Home() {
   const npcAction = useNpcActions();
   const { actors, setActors, globalStory } = useMysteryContext(); 
+  const latestActors = React.useRef(actors);
+  latestActors.current = actors;
   const { currentScript } = useScriptContext();
   const [currActor, setCurrActor] = useState<number>(0);
   
@@ -45,6 +47,15 @@ export default function Home() {
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const [cancelStream, setCancelStream] = useState<(() => void) | null>(null);
   const sessionId = useSessionContext();
+  const managed = Boolean(npcAction?.managed);
+  const solved = npcAction?.room?.solved;
+
+  useEffect(() => {
+    if (managed && solved) {
+      setEndGame(false);
+      setPostGame(true);
+    }
+  }, [managed, solved]);
 
   // 初始化证物数据
   useEffect(() => {
@@ -144,7 +155,7 @@ export default function Home() {
 
   // 处理后剧情强制消息的发送
   useEffect(() => {
-    if (postGame && !forcedMessageSent && actors[currActor] && currentScript) {
+    if (postGame && !managed && !forcedMessageSent && actors[currActor] && currentScript) {
       const killerActor = actors[currActor];
       if (killerActor.isKiller || killerActor.name === currentScript.settings?.killerRole) {
         // 检查是否还有我们的强制推理消息需要发送
@@ -162,7 +173,7 @@ export default function Home() {
         }
       }
     }
-  }, [postGame, currActor, actors, forcedMessageSent, currentScript, quizAnswers, forceTextResponseToKiller, getPlayerActor]);
+  }, [postGame, managed, currActor, actors, forcedMessageSent, currentScript, quizAnswers, forceTextResponseToKiller, getPlayerActor]);
 
   const handleEndGame = () => {
     setEndGame(true);
@@ -174,8 +185,13 @@ export default function Home() {
   };
 
   const handleBackToGame = (answers: string[]) => {
-    console.log(answers)
+    npcAction?.finish();
     setQuizAnswers(answers); // 保存答题结果
+    if (managed) {
+      setEndGame(false);
+      setPostGame(true);
+      return;
+    }
     const updatedActors: Record<number, Actor> = { ...actors };
     // 基于当前剧本自动定位凶手（优先 settings.killerRole，其次 isKiller 标记）
     const killerNameFromSettings = currentScript?.settings?.killerRole;
@@ -226,18 +242,15 @@ export default function Home() {
   };
 
   // 处理证物出示到聊天
-  const handleEvidencePresent = (evidence: Evidence) => {
+  const handleEvidencePresent = async (evidence: Evidence) => {
+    if (postGame && managed) return;
     // 检查是否有当前对话的Actor
     if (!actors[currActor] || actors[currActor].isPlayer) {
       console.warn('无法发送证物：当前没有有效的对话对象');
       return;
     }
 
-    const currentActor = actors[currActor];
-    if (!postGame && npcAction && tracksEvidence(currentActor, evidence.id)) {
-      void npcAction(currentActor, 'show', evidence.id, '[出示证物] ' + evidence.name);
-      return;
-    }
+    const selectedActor = actors[currActor];
     const playerActor = getPlayerActor();
 
     // 构建证物消息
@@ -245,6 +258,11 @@ export default function Home() {
       role: "user",
       content: `[出示证物] ${evidence.name}: ${evidence.basicDescription}`
     };
+    const outcome = !postGame && npcAction
+      ? await npcAction.dispatch(selectedActor, evidenceMessage.content, evidence.id)
+      : 'legacy';
+    const currentActor = latestActors.current[selectedActor.id];
+    if (outcome === 'handled' || currentActor?.name !== selectedActor.name) return;
 
     console.log('🔍 向', currentActor.name, '出示证物:', evidence.name);
 
@@ -260,7 +278,8 @@ export default function Home() {
       postGame,
       getDetectiveName(), 
       getVictimName(), 
-      actors
+      latestActors.current,
+      outcome === 'chat',
     );
     
     setCancelStream(() => cancel);
@@ -311,6 +330,8 @@ export default function Home() {
             onResumeGame={handleResumeGame}
             questions={currentScript?.quiz as QuizQuestion[] | undefined}
             script={currentScript}
+            verdictOptions={npcAction?.verdictOptions}
+            checkVerdict={managed ? npcAction?.verdict : undefined}
           />
         ) : (
           <div>
@@ -340,8 +361,8 @@ export default function Home() {
                 <TabbedRightPanel
                   sessionId={sessionId}
                   scriptId={currentScript?.id || ''}
-                  currentActor={currActor && !actors[currActor]?.isPlayer ? actors[currActor]?.name : undefined}
-                  currentActorId={currActor && !actors[currActor]?.isPlayer ? currActor : undefined}
+                  currentActor={actors[currActor] && !actors[currActor].isPlayer ? actors[currActor].name : undefined}
+                  currentActorId={actors[currActor] && !actors[currActor].isPlayer ? currActor : undefined}
                   onEvidenceSelect={(evidence) => {
                     console.log('证物选择:', evidence);
                   }}
@@ -366,7 +387,7 @@ export default function Home() {
                 了解更多
               </Button>
             )}
-            {(
+            {!managed && (
               <Button 
                 onClick={() => setSecretsModalOpened(true)} 
                 style={{
@@ -415,6 +436,7 @@ export default function Home() {
         onClose={() => setEndModalOpened(false)}
         script={currentScript}
         playerName={getPlayerActor()?.name}
+        managed={managed}
       />
 
       <ExplanationModal
@@ -422,12 +444,12 @@ export default function Home() {
         onClose={() => setExplanationModalOpened(false)}
       />   
 
-      <SecretsModal
+      {!managed && <SecretsModal
         opened={secretsModalOpened}
         onClose={() => setSecretsModalOpened(false)}
         postGame={postGame}  // 修复逻辑：直接传递postGame状态
         script={currentScript || undefined}  // 修复类型：null转换为undefined
-      />  
+      />}
 
     </AppShell>
   );

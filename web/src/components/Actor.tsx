@@ -4,7 +4,7 @@ import {
   LLMMessage,
   useMysteryContext,
 } from "../providers/mysteryContext";
-import { Button, Group, Stack, Text, TextInput, ActionIcon, Tooltip } from "@mantine/core";
+import { Badge, Button, Group, Stack, Text, TextInput, ActionIcon, Tooltip } from "@mantine/core";
 import { IconPhoto, IconRefresh, IconNotes, IconPaperclip } from "@tabler/icons-react";
 import invokeAI, { invokeAIStream } from "../api/invoke";
 import ActorImage from "./ActorImage";
@@ -12,7 +12,7 @@ import ChatMessage from "./ChatMessage";
 import { generateBackgroundFromActor } from "../api/backgroundGenerator";
 import { useSessionContext } from "../providers/sessionContext";
 import { useScriptContext } from "../providers/scriptContext";
-import { registryQuestion, tracksActor, tracksEvidence, useNpcActions } from "../providers/npcActions";
+import { decisionLabel, useNpcActions } from "../providers/npcActions";
 import CHARACTER_DATA from "../characters.json";
 import { 
   generateRoleReactionPrompt, 
@@ -149,27 +149,16 @@ const sendChatStream = (
   postGame?: boolean,
   detectiveName?: string,
   victimName?: string,
-  allActors?: Record<number, Actor>
+  allActors?: Record<number, Actor>,
+  managedChat = false,
 ) => {
   setLoading(true);
-  const setActor = (a: Partial<Actor>) => {
-    setActors((all) => {
-      const newActors = { ...all };
-      newActors[actor.id] = {
-        ...newActors[actor.id],
-        ...a,
-      };
-      return newActors;
-    });
-  };
-
-  setActor({ messages });
 
   // 智能角色交互逻辑
   let enhancedActor = { ...actor, messages };
   
   // 在后剧情模式下，直接使用原始消息，不进行增强处理
-  if (currentPlayerActor && !postGame) {
+  if (currentPlayerActor && !postGame && !managedChat) {
     const mode = getInteractionMode(currentPlayerActor, actor);
     const lastMessage = messages[messages.length - 1];
     
@@ -221,23 +210,44 @@ const sendChatStream = (
         ]
       };
     }
-  } else if (postGame) {
   }
 
-  // 添加一个空的助手消息，用于流式更新
-  const assistantMessage: LLMMessage = {
-    role: "assistant",
-    content: "",
-  };
-  
-  setActor({
-    messages: [
-      ...messages,
-      assistantMessage,
-    ],
+  if (managedChat) {
+    enhancedActor = {
+      ...enhancedActor,
+      isKiller: false,
+      roleType: actor.roleType === '凶手' ? '嫌疑人' : actor.roleType,
+      secret: '',
+      violation: '',
+      context: '以角色口吻回应日常话题。调查事实由调查系统提供。请保留未查证的说法，不补写案情、证据或角色已经执行的行动。',
+      messages: messages.slice(-12).map(({ role, content }) => ({ role, content })),
+    };
+  }
+
+  let assistantMessage: LLMMessage = { role: "assistant", content: "" };
+  const placeholder = assistantMessage;
+  setActors(all => {
+    const current = all[actor.id];
+    if (!current || current.name !== actor.name) return all;
+    return {
+      ...all,
+      [actor.id]: { ...current, messages: [...current.messages, messages[messages.length - 1], placeholder] },
+    };
   });
 
-  let fullResponse = "";
+  const updateAssistant = (content: string) => {
+    const previous = assistantMessage;
+    const updated: LLMMessage = { role: "assistant", content };
+    assistantMessage = updated;
+    setActors(all => {
+      const current = all[actor.id];
+      if (!current?.messages.includes(previous)) return all;
+      return {
+        ...all,
+        [actor.id]: { ...current, messages: current.messages.map(message => message === previous ? updated : message) },
+      };
+    });
+  };
 
   const cancelStream = invokeAIStream({
     globalStory,
@@ -246,47 +256,67 @@ const sendChatStream = (
     actor: enhancedActor,
     detectiveName,
     victimName,
-    allActors,
-    onChunk: (content: string) => {
-      fullResponse += content;
-      // 监控流式内容接收（调试用）
-      
-      // 更新最后一条消息的内容
-      setActor({
-        messages: [
-          ...messages,
-          {
-            role: "assistant",
-            content: fullResponse,
-          },
-        ],
-      });
-    },
+    allActors: managedChat ? undefined : allActors,
+    onChunk: (content: string) => updateAssistant(assistantMessage.content + content),
     onEnd: () => {
       setLoading(false);
     },
     onError: (error: string) => {
       console.error("❌ 流式响应错误:", error);
       setLoading(false);
-      // 在错误情况下，显示错误消息
-      setActor({
-        messages: [
-          ...messages,
-          {
-            role: "assistant",
-            content: `Error: ${error}`,
-          },
-        ],
-      });
+      updateAssistant(`Error: ${error}`);
     },
   });
 
   return cancelStream;
 };
 
+function ReplyDetails({ message }: { message: LLMMessage }) {
+  const npc = useNpcActions();
+  const [shared, setShared] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [error, setError] = useState('');
+  const label = decisionLabel(message.npcDriver);
+  const classification = message.npcClassification === 'claim' || message.npcClassification === 'fact';
+  const turnId = message.npcTurnId;
+  if (message.role !== 'assistant' || !turnId || (!label && !classification && !message.npcSource)) return null;
+
+  async function share() {
+    if (!npc || !turnId || shared || sharing) return;
+    setSharing(true);
+    setError('');
+    try {
+      await npc.share(turnId);
+      setShared(true);
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : '回报暂时无法公开');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  return (
+    <Group gap="xs" mb="sm" pl="sm">
+      {label && <Badge size="xs" color={message.npcDriver === 'fallback' ? 'orange' : 'cyan'} variant="light">{label}</Badge>}
+      {classification && <Badge size="xs" color={message.npcClassification === 'fact' ? 'teal' : 'yellow'} variant="light">
+        {message.npcClassification === 'fact' ? '已核实材料' : '角色主张'}
+      </Badge>}
+      {message.npcSource && <Text size="xs" c="gray.3">来源 {message.npcSource}</Text>}
+      {classification && npc?.managed && (
+        <Button variant="subtle" color="cyan" size="compact-xs" loading={sharing} disabled={shared} onClick={() => void share()}>
+          {shared ? '已公开' : '公开回报'}
+        </Button>
+      )}
+      {error && <Text size="xs" c="red.3" role="alert">{error}</Text>}
+    </Group>
+  );
+}
+
 const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const [currMessage, setCurrMessage] = React.useState("");
   const { actors, setActors, globalStory } = useMysteryContext();
+  const latestActors = React.useRef(actors);
+  latestActors.current = actors;
   const { currentScript } = useScriptContext();
   const npcAction = useNpcActions();
   const [loading, setLoading] = useState(false);
@@ -309,36 +339,29 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const detectiveName = currentScript?.characters?.find(char => char.isPlayer)?.name;
   const victimName = currentScript?.characters?.find(char => char.isVictim)?.name;
 
-  const runNpcAction = async (message: string, action: 'ask' | 'show', source: string) => {
-    if (!npcAction || loading) return;
+  const sendFromDialogue = async (message: LLMMessage, evidenceId?: string) => {
     setLoading(true);
-    try {
-      await npcAction(actor, action, source, message);
-    } finally {
+    setCancelStream(null);
+    const outcome = !postGame && npcAction
+      ? await npcAction.dispatch(actor, message.content, evidenceId)
+      : 'legacy';
+    const current = latestActors.current[actor.id];
+    if (outcome === 'handled' || current?.name !== actor.name) {
       setLoading(false);
-    }
-  };
-  const handleSendMessage = () => {
-    // 如果输入框为空或只有空白字符，不发送消息
-    if (!currMessage.trim()) return;
-    const question = registryQuestion(currMessage);
-    if (!postGame && npcAction && question && tracksActor(actor)) {
-      setCurrMessage('');
-      void runNpcAction(currMessage.trim(), 'ask', question);
       return;
     }
-    
-    const newMessage: LLMMessage = {
-      role: "user",
-      content: currMessage.trim(),
-    };
-
-    // 立即清空输入框，提供即时反馈
-    setCurrMessage("");
-
-    // 使用流式版本，传递当前玩家角色和后剧情状态，以及侦探和受害者名称
-    const cancel = sendChatStream([...actor.messages, newMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
+    const cancel = sendChatStream(
+      [...current.messages, message], setActors, globalStory, sessionId, current, setLoading,
+      currentPlayerActor, postGame, detectiveName, victimName, latestActors.current, outcome === 'chat',
+    );
     setCancelStream(() => cancel);
+  };
+
+  const handleSendMessage = () => {
+    const text = currMessage.trim();
+    if (!text || loading) return;
+    setCurrMessage("");
+    void sendFromDialogue({ role: "user", content: text });
   };
 
   const handleStopGeneration = () => {
@@ -358,11 +381,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
 
   // 处理证物发送
   const handleEvidenceSend = (evidence: Evidence, textContent?: string) => {
-    if (!postGame && npcAction && tracksEvidence(actor, evidence.id)) {
-      setShowEvidenceSelector(false);
-      void runNpcAction('[发送证物] ' + evidence.name + (textContent ? '：' + textContent : ''), 'show', evidence.id);
-      return;
-    }
+    if (loading) return;
     // 构建完整的证物信息消息，供AI生成智能反应
     // AI获取完整信息（包含概况和线索）
     let evidenceDetails = getFullEvidenceForAI(evidence);
@@ -398,8 +417,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
     // 立即关闭证物选择器，提供即时反馈
     setShowEvidenceSelector(false);
 
-    const cancel = sendChatStream([...actor.messages, evidenceMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
-    setCancelStream(() => cancel);
+    void sendFromDialogue(evidenceMessage, evidence.id);
   };
 
   // 处理笔记发送
@@ -412,7 +430,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
     // 立即关闭笔记选择器，提供即时反馈
     setShowNoteSelector(false);
 
-    const cancel = sendChatStream([...actor.messages, noteMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
+    const cancel = sendChatStream([...actor.messages, noteMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors, npcAction?.managed);
     setCancelStream(() => cancel);
   };
 
@@ -662,18 +680,17 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
           paddingRight: '8px' // 为滚动条留出空间
         }}>
           {actor.messages.map((m, i) => (
-            <ChatMessage
-              key={i}
-              message={m}
-              actor={actor}
-              currentPlayerActor={currentPlayerActor}
-              isUser={m.role === "user"}
-            />
+            <React.Fragment key={m.npcTurnId ? m.npcTurnId + ':' + m.role : i}>
+              <ChatMessage message={m} actor={actor} currentPlayerActor={currentPlayerActor} isUser={m.role === "user"} />
+              <ReplyDetails message={m} />
+            </React.Fragment>
           ))}
         </div>
         
         {/* 输入框区域 - 固定在底部 */}
-        <Group style={{ 
+        {postGame && npcAction?.managed ? (
+          <Text size="sm" c="gray.3" mt="md">此席位已结案。可在调查记录中查看解释。</Text>
+        ) : <Group style={{
           marginTop: '16px',
           flexShrink: 0 // 防止输入框被压缩
         }}>
@@ -699,7 +716,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
               }}
             />
             <div className="loading-cyber" />
-            <Button 
+            {cancelStream && <Button
               size="sm" 
               variant="outline" 
               className="btn-crimson"
@@ -711,7 +728,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
               }}
             >
               停止
-            </Button>
+            </Button>}
           </>
         ) : (
           <TextInput
@@ -801,7 +818,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
         >
           {loading ? '发送中...' : '发送'}
         </Button>
-        </Group>
+        </Group>}
       </div>
 
       </Stack>
@@ -814,6 +831,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
         onSend={handleEvidenceSend}
         sessionId={sessionId}
         currentActor={actor.name}
+        inventory={npcAction?.inventory}
       />
 
       {/* 笔记选择器 */}

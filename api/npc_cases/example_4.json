@@ -1,0 +1,295 @@
+{
+  "id": "example_4",
+  "title": "深宫血色：玉玺谜云",
+  "verdict": {
+    "suspects": ["太平公主", "张昌宗", "李隆基", "武惠妃", "高力士"],
+    "motives": ["报复上官婉儿阻挠争宠", "铲除李唐复兴的障碍", "掩盖武氏家族贪墨军饷", "掩盖宫中私情"]
+  },
+  "truth": {
+    "suspect": "武惠妃",
+    "motive": "掩盖武氏家族贪墨军饷",
+    "explanation": "上官婉儿在《宫闱秘录》中写下了武氏家族贪墨军饷的证据。武惠妃从寝宫的密道进入门窗紧闭的绮墨斋，用砚台打伤上官婉儿后灌入毒茶，随后销毁秘录。香囊与暗红丝线可以说明其他人也曾来过。御史台副册没有出库签押，只能排除有记载的借阅，不能单凭这一点指认真凶。",
+    "timeline": [
+      {"when": "案发前一时辰", "event": "太平公主与上官婉儿争执，离开时披风在门闩留下暗红丝线。"},
+      {"when": "案发当夜", "event": "武惠妃借密道进入绮墨斋，对上官婉儿下手并取走《宫闱秘录》。"},
+      {"when": "案发之后", "event": "高力士奉命寻找《宫闱秘录》，见到上官婉儿已倒地，未能找到原本。"},
+      {"when": "发现现场时", "event": "调查者发现紧闭的门窗、毒茶、毛笔和香囊，现场已无《宫闱秘录》。"}
+    ],
+    "clues": ["evidence_manuscript_missing", "evidence_secret_passage", "evidence_zhang_sachet", "registry_copy"]
+  },
+  "roles": {
+    "御史大夫": {
+      "identity": "朝廷御史",
+      "motivation": "奉命核查宫中命案，希望引导调查者以原始记录为准",
+      "goal": "核对有据可查的登记与时序，遇到未经核实的说辞先找原始记录",
+      "interests": ["registry", "watch"],
+      "relations": {"$player": 2, "太平公主": 1, "高力士": -1},
+      "knowledge": ["registry_copy", "registry_attestation", "watch_roll"],
+      "disclosure": ["registry_attestation"],
+      "verify": ["registry_attestation", "watch_report"]
+    },
+    "太平公主": {
+      "identity": "武则天的女儿",
+      "motivation": "与受害人有旧交，希望厘清秘录去向，同时保留与案件无关的私事",
+      "goal": "先查清宫闱秘录的登记去向，保留与案情无关的私事",
+      "interests": ["registry", "archive"],
+      "relations": {"$player": 1, "御史大夫": 1},
+      "knowledge": ["archive_location"],
+      "disclosure": [],
+      "verify": ["registry_attestation"]
+    },
+    "张昌宗": {
+      "identity": "女皇近侍",
+      "motivation": "担心自己的香囊引起误解，希望先从领用单查清批次",
+      "goal": "弄清香囊领用记录，避免卷入对宫闱秘录的追问",
+      "interests": ["sachet"],
+      "relations": {"$player": 0, "太平公主": -1},
+      "knowledge": ["sachet_mark"],
+      "disclosure": [],
+      "verify": []
+    },
+    "李隆基": {
+      "identity": "临淄王",
+      "motivation": "看重心腹的消息，希望在可信的联络里先弄清值守动静",
+      "goal": "核对夜间值守，只在可信联络中核实消息",
+      "interests": ["watch"],
+      "relations": {"$player": 0, "高力士": 2},
+      "knowledge": [],
+      "disclosure": [],
+      "verify": ["watch_report"]
+    },
+    "武惠妃": {
+      "identity": "武氏家族成员",
+      "motivation": "怕封存资料牵连家族，尽量阻止外人查阅",
+      "goal": "守住内廷封存资料，拒绝替调查者查阅涉及内廷私事的名册",
+      "interests": ["sealed"],
+      "relations": {"$player": -2, "御史大夫": -1},
+      "knowledge": ["sealed_roll"],
+      "disclosure": [],
+      "verify": []
+    },
+    "高力士": {
+      "identity": "宫廷太监总管",
+      "motivation": "效忠临淄王，谨慎说明自己在外廊的见闻",
+      "goal": "听从临淄王的查问，谨慎说明自己在外廊见到的值守情况",
+      "interests": ["watch"],
+      "relations": {"$player": -1, "李隆基": 2},
+      "knowledge": ["watch_report"],
+      "disclosure": ["watch_report"],
+      "verify": []
+    }
+  },
+  "evidence": {
+    "evidence_manuscript_missing": {
+      "name": "遗失的宫闱秘录",
+      "text": "绮墨斋的《宫闱秘录》已经遗失。清点时没有找到原本。",
+      "topic": "registry",
+      "category": "document",
+      "importance": "critical",
+      "reply": "我看过这份记录了，仅凭遗失登记无法确定是谁取走了原件。"
+    },
+    "evidence_zhang_sachet": {
+      "name": "张昌宗的香囊",
+      "text": "现场发现了一个宫廷香囊。袋缝有一段织入的双结纹样。",
+      "topic": "sachet",
+      "category": "physical",
+      "importance": "medium"
+    },
+    "evidence_broken_brush": {
+      "name": "折断的毛笔",
+      "text": "上官婉儿的右手紧握折断的毛笔，笔杆从中间断开。",
+      "topic": "scene",
+      "category": "physical",
+      "importance": "high"
+    },
+    "evidence_secret_passage": {
+      "name": "密室通道",
+      "text": "从武惠妃寝宫发现通往绮墨斋的暗门，通道内壁有新鲜摩擦痕迹，说明近期有人使用。",
+      "topic": "scene",
+      "category": "physical",
+      "importance": "critical"
+    }
+  },
+  "topics": {
+    "registry": {
+      "label": "宫闱秘录的借阅登记",
+      "hint": "请太平公主向御史大夫打听借阅登记，再对照副册上的出库签押。",
+      "aliases": ["秘录", "宫闱秘录", "登记", "借阅", "签押", "出库", "副册", "御史", "御史大夫"],
+      "options": ["consult_registry", "inspect_registry"]
+    },
+    "archive": {
+      "label": "雨夜的归档原簿",
+      "hint": "可以请太平公主寻找雨夜原簿。调不出原件时，保留这个缺口并转查副册。",
+      "aliases": ["原簿", "雨夜原簿", "归档", "原始簿册", "原账", "绮墨斋当天的账本"],
+      "options": ["inspect_original"]
+    },
+    "watch": {
+      "label": "绮墨斋外廊的值守",
+      "hint": "问李隆基能否找高力士核对外廊值守，再区分听到的情况和原始值牌。",
+      "aliases": ["值守", "外廊", "巡更", "值牌", "巡夜", "门口", "高力士"],
+      "options": ["ask_watch", "inspect_watch"]
+    },
+    "sealed": {
+      "label": "封存的内廷名册",
+      "hint": "查阅封存名册需要内廷授权。遇到拒绝时，可以先核对现有证物。",
+      "aliases": ["封存", "内廷名册", "机密名单", "密档", "封印名册"],
+      "options": ["inspect_sealed"]
+    },
+    "sachet": {
+      "label": "香囊的领用单",
+      "hint": "把现场香囊给张昌宗看，请他对照领用单上的批次或纹样。",
+      "aliases": ["香囊", "领用单", "香料", "双结纹", "领香记录"],
+      "options": ["inspect_sachet"]
+    },
+    "scene": {
+      "label": "绮墨斋的现场痕迹",
+      "hint": "核对毛笔和密室通道。角色到过现场，只能证明有行动机会。",
+      "aliases": ["毛笔", "笔杆", "通道", "密道", "暗门", "现场痕迹"],
+      "options": []
+    }
+  },
+  "records": {
+    "registry_copy": {
+      "name": "御史台副册",
+      "text": "御史台副册记载，秘录交由绮墨斋收管，二更后收存栏与出库栏均无签押。附录索引还保留「武氏军饷核查」一条。副册没有记录原本的去向，也没有记下核查细节。",
+      "kind": "fact",
+      "basis": "document",
+      "topic": "registry"
+    },
+    "registry_attestation": {
+      "name": "御史大夫对借阅登记的口头说明",
+      "text": "我昨夜核对过御史台副册，未见完整的出库签押。仅凭这份副册，还无法判断原本去了哪里。",
+      "kind": "claim",
+      "basis": "observation",
+      "topic": "registry"
+    },
+    "archive_location": {
+      "name": "内档处的归档习惯",
+      "text": "每次朝会后，绮墨斋的簿册通常提交内档处，由当值人抄录。",
+      "kind": "claim",
+      "basis": "interpretation",
+      "topic": "archive"
+    },
+    "archive_original": {
+      "name": "雨夜归档原簿",
+      "text": "",
+      "kind": "fact",
+      "basis": "document",
+      "topic": "archive",
+      "available": false
+    },
+    "watch_roll": {
+      "name": "绮墨斋外廊值牌",
+      "text": "二更至三更的登记列有巡更、送茶两个岗位，值牌没有写明当值人的姓名。",
+      "kind": "fact",
+      "basis": "document",
+      "topic": "watch"
+    },
+    "watch_report": {
+      "name": "高力士对外廊值守的陈述",
+      "text": "二更后我路过外廊，听到巡更人换班。风雨挡着视线，我从这里辨不出绮墨斋门口的人。",
+      "kind": "claim",
+      "basis": "observation",
+      "topic": "watch"
+    },
+    "sealed_roll": {
+      "name": "封存的内廷名册",
+      "text": "名册封存时只有内廷管事在场，卷封附有内廷印记。",
+      "kind": "fact",
+      "basis": "document",
+      "topic": "sealed"
+    },
+    "sachet_mark": {
+      "name": "张昌宗对香囊纹样的辨认",
+      "text": "双结纹可以用来辨认同一批领用物，但许多人都能领取这种香囊。",
+      "kind": "claim",
+      "basis": "interpretation",
+      "topic": "sachet"
+    },
+    "sachet_invoice": {
+      "name": "香囊领用单",
+      "text": "双结纹对应同一批领用的六个香囊，领用单只记批次和数量。",
+      "kind": "fact",
+      "basis": "document",
+      "topic": "sachet"
+    }
+  },
+  "actions": {
+    "consult_registry": {
+      "kind": "ask",
+      "cost": 1,
+      "label": "向御史大夫查问秘录的借阅登记",
+      "roles": ["太平公主"],
+      "topic": "registry",
+      "target": "御史大夫",
+      "record": "registry_attestation"
+    },
+    "inspect_registry": {
+      "kind": "inspect",
+      "cost": 1,
+      "label": "核对御史台副册的出库栏",
+      "roles": ["御史大夫"],
+      "topic": "registry",
+      "target": "registry_copy"
+    },
+    "inspect_original": {
+      "kind": "inspect",
+      "cost": 2,
+      "label": "调阅雨夜归档原簿",
+      "roles": ["太平公主", "御史大夫"],
+      "topic": "archive",
+      "target": "archive_original"
+    },
+    "ask_watch": {
+      "kind": "ask",
+      "cost": 1,
+      "label": "向高力士查问外廊值守",
+      "roles": ["李隆基"],
+      "topic": "watch",
+      "target": "高力士",
+      "record": "watch_report"
+    },
+    "inspect_watch": {
+      "kind": "inspect",
+      "cost": 1,
+      "label": "翻查外廊的值牌",
+      "roles": ["御史大夫"],
+      "topic": "watch",
+      "target": "watch_roll"
+    },
+    "inspect_sealed": {
+      "kind": "inspect",
+      "cost": 2,
+      "label": "核查封存的内廷名册",
+      "roles": ["武惠妃"],
+      "topic": "sealed",
+      "target": "sealed_roll"
+    },
+    "inspect_sachet": {
+      "kind": "inspect",
+      "cost": 1,
+      "label": "按香囊袋缝纹样核对领用单",
+      "roles": ["张昌宗"],
+      "topic": "sachet",
+      "target": "sachet_invoice",
+      "requires": ["evidence_zhang_sachet"]
+    }
+  },
+  "reactions": {
+    "registry": {
+      "太平公主": ["consult_registry"],
+      "御史大夫": ["inspect_registry"]
+    }
+  },
+  "followups": {
+    "registry": {
+      "御史大夫": {
+        "receipt": true,
+        "origin_requires_statement": true,
+        "baseline": "我还没有收到过关于这份登记的询问。",
+        "disclose": "有人托我核对过这份登记。你可以再问我是谁提出的。"
+      }
+    },
+    "watch": {"高力士": {"receipt": false}}
+  }
+}

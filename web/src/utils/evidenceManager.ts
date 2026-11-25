@@ -1,6 +1,6 @@
 // 证物管理工具函数
 
-import { Evidence, EvidenceContext, EvidenceFilter, EvidenceStats, EvidenceDiscovery, EvidencePresentation, GameProgress } from '../types/evidence';
+import { Evidence, EvidenceContext, EvidenceFilter, EvidenceStats, EvidenceDiscovery, EvidencePresentation, GameProgress, EvidenceInventory, createDefaultEvidence } from '../types/evidence';
 import { nanoid } from 'nanoid';
 import { Script, ScriptEvidence } from '../types/script';
 import { initializeEvidencesForScript } from '../data/sampleEvidences';
@@ -269,9 +269,33 @@ export const getEvidenceById = (sessionId: string, evidenceId: string): Evidence
 /**
  * 获取过滤后的证物列表
  */
-export const getFilteredEvidences = (sessionId: string, filter?: EvidenceFilter): Evidence[] => {
+function seatEvidence(context: EvidenceContext, inventory?: EvidenceInventory): Evidence[] {
+  if (!inventory) return context.evidences;
+  const registered = new Set(inventory.registered);
+  const held = new Set(inventory.held);
+  const details = new Map(inventory.details.map(evidence => [evidence.id, evidence]));
+  const visible = context.evidences
+    .filter(evidence => !registered.has(evidence.id) || held.has(evidence.id))
+    .map(evidence => {
+      const authoritative = details.get(evidence.id);
+      if (!authoritative) return evidence;
+      details.delete(evidence.id);
+      return { ...evidence, name: authoritative.name, basicDescription: authoritative.text, discoveryState: 'surface' as const };
+    });
+  for (const evidence of Array.from(details.values())) {
+    if (!held.has(evidence.id)) continue;
+    visible.push(createDefaultEvidence({
+      id: evidence.id, name: evidence.name, basicDescription: evidence.text,
+      sessionId: context.sessionId, scriptId: context.scriptId,
+      category: evidence.category || 'document', importance: evidence.importance || 'medium', isNew: false,
+    }));
+  }
+  return visible;
+}
+
+export const getFilteredEvidences = (sessionId: string, filter?: EvidenceFilter, inventory?: EvidenceInventory): Evidence[] => {
   const context = loadEvidenceContext(sessionId);
-  let evidences = [...context.evidences];
+  let evidences = [...seatEvidence(context, inventory)];
   
   if (!filter) return evidences;
   
@@ -330,9 +354,9 @@ export const getFilteredEvidences = (sessionId: string, filter?: EvidenceFilter)
 /**
  * 获取证物统计信息
  */
-export const getEvidenceStats = (sessionId: string): EvidenceStats => {
+export const getEvidenceStats = (sessionId: string, inventory?: EvidenceInventory): EvidenceStats => {
   const context = loadEvidenceContext(sessionId);
-  const evidences = context.evidences;
+  const evidences = seatEvidence(context, inventory);
   
   const categoryBreakdown = evidences.reduce((acc, evidence) => {
     acc[evidence.category] = (acc[evidence.category] || 0) + 1;

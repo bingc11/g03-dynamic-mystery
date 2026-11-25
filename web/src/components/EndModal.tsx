@@ -8,9 +8,10 @@ interface IntroModalProps {
   onClose: () => void;
   script?: Script | null;
   playerName?: string;
+  managed?: boolean;
 }
 
-const IntroModal: React.FC<IntroModalProps> = ({ opened, onClose, script, playerName }) => {
+const IntroModal: React.FC<IntroModalProps> = ({ opened, onClose, script, playerName, managed }) => {
   return (
     <BaseModal
       variant="solid"
@@ -18,6 +19,9 @@ const IntroModal: React.FC<IntroModalProps> = ({ opened, onClose, script, player
       onClose={onClose}
       title={script ? `感谢你游玩《${script.title}》` : '感谢你玩AI不在场证明！'}
     >
+      {managed ? (
+        <Text c="white">推理成立。你可以在「调查记录」回看线索，也可以选择查看结案解释。</Text>
+      ) : <>
       <Text 
         style={{ 
           color: '#FFFFFF', 
@@ -64,6 +68,7 @@ const IntroModal: React.FC<IntroModalProps> = ({ opened, onClose, script, player
       >
         你喜欢这个游戏吗？在社交媒体上告诉我们你的想法！如果你想在这个想法的高级实现上合作，请给Paul Scotti发邮件scottibrain+aialibis[at]gmail.com，邮件标题包含"AI Alibis"。
       </Text>
+      </>}
       <Button 
         onClick={onClose} 
         mt="lg"

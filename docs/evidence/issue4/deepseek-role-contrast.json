@@ -1,0 +1,296 @@
+{
+  "driver": "llm",
+  "passed": true,
+  "case": "example_4",
+  "same_input": "请看遗失的宫闱秘录。",
+  "evidence": "evidence_manuscript_missing",
+  "provider_attempt_limit": 7,
+  "provider_attempts": 4,
+  "roles": [
+    {
+      "actor": "太平公主",
+      "goal": "先查清宫闱秘录的登记去向，保留与案情无关的私事",
+      "motivation": "与受害人有旧交，希望厘清秘录去向，同时保留与案件无关的私事",
+      "relationships": {
+        "$player": 1,
+        "御史大夫": 1
+      },
+      "knowledge_ids": [
+        "archive_location"
+      ],
+      "reaction": "consult_registry",
+      "driver": "llm",
+      "events": [
+        {
+          "id": "973225dd51b94bdf9fbb005129c56f3d",
+          "kind": "show",
+          "actor": "$player",
+          "recipient": "太平公主",
+          "source": "evidence_manuscript_missing",
+          "cause": null
+        },
+        {
+          "id": "09b8ab0597984b8080f6536e2f7a3091",
+          "kind": "decision",
+          "actor": "太平公主",
+          "recipient": null,
+          "source": "registry",
+          "cause": "973225dd51b94bdf9fbb005129c56f3d"
+        },
+        {
+          "id": "8d124e60a3864f48b9377b1bfb4f3e08",
+          "kind": "private_question",
+          "actor": "太平公主",
+          "recipient": "御史大夫",
+          "source": "registry",
+          "cause": "09b8ab0597984b8080f6536e2f7a3091"
+        },
+        {
+          "id": "8b14c19ed3374cf59fcf91d1eb05265c",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry",
+          "cause": "8d124e60a3864f48b9377b1bfb4f3e08"
+        },
+        {
+          "id": "586ee20106c24e4abb470b012b5fb05c",
+          "kind": "reception",
+          "actor": "御史大夫",
+          "recipient": "太平公主",
+          "source": "registry",
+          "cause": "8b14c19ed3374cf59fcf91d1eb05265c"
+        },
+        {
+          "id": "1d0f0b2877434e1dafa9ae9a30f38867",
+          "kind": "claim",
+          "actor": "御史大夫",
+          "recipient": "太平公主",
+          "source": "registry_attestation",
+          "cause": "586ee20106c24e4abb470b012b5fb05c"
+        }
+      ],
+      "model": {
+        "attempts": 2,
+        "input_tokens": 1062,
+        "output_tokens": 17,
+        "input_budget_used": 1062,
+        "output_budget_used": 17,
+        "latency_ms": 2892,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 2
+        },
+        "audit": [
+          {
+            "at": 1795613694.153,
+            "purpose": "reaction",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "83beb4d092dd5d11d55ec88331e9fc541af674e3fed60a1d4908f77a26cf7711",
+            "input_tokens": 456,
+            "output_tokens": 9,
+            "latency_ms": 2198,
+            "http_status": null,
+            "candidate_id": "consult_registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          },
+          {
+            "at": 1795613694.848,
+            "purpose": "response",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 2,
+            "retry": false,
+            "request_sha256": "a9577cba57c09ff7fedaca953ab0b28450b01b4ee8b626a31bd794e96f9d43a3",
+            "input_tokens": 606,
+            "output_tokens": 8,
+            "latency_ms": 694,
+            "http_status": null,
+            "candidate_id": "disclose",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "checks": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0,
+        "event_links_checked": 5,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "action_proposals": 2,
+        "legal_action_proposals": 2,
+        "sources_checked": 1,
+        "missing_sources": 0,
+        "fact_claim_errors": 0
+      }
+    },
+    {
+      "actor": "御史大夫",
+      "goal": "核对有据可查的登记与时序，遇到未经核实的说辞先找原始记录",
+      "motivation": "奉命核查宫中命案，希望引导调查者以原始记录为准",
+      "relationships": {
+        "$player": 2,
+        "太平公主": 1,
+        "高力士": -1
+      },
+      "knowledge_ids": [
+        "registry_copy",
+        "registry_attestation",
+        "watch_roll"
+      ],
+      "reaction": "inspect_registry",
+      "driver": "llm",
+      "events": [
+        {
+          "id": "165ecb5edf4c4ea082f7c63d87249998",
+          "kind": "show",
+          "actor": "$player",
+          "recipient": "御史大夫",
+          "source": "evidence_manuscript_missing",
+          "cause": null
+        },
+        {
+          "id": "bacef90975c14d9293e97f5c7e4ce5ed",
+          "kind": "decision",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry",
+          "cause": "165ecb5edf4c4ea082f7c63d87249998"
+        },
+        {
+          "id": "83692ee2b5c4480e9b7bbf56d6a9e4d2",
+          "kind": "object_read",
+          "actor": "御史大夫",
+          "recipient": null,
+          "source": "registry_copy",
+          "cause": "bacef90975c14d9293e97f5c7e4ce5ed"
+        }
+      ],
+      "model": {
+        "attempts": 1,
+        "input_tokens": 597,
+        "output_tokens": 10,
+        "input_budget_used": 597,
+        "output_budget_used": 10,
+        "latency_ms": 1306,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 1
+        },
+        "audit": [
+          {
+            "at": 1795613696.154,
+            "purpose": "reaction",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "b30077d6b388e3f8896fdf6ad7b50d6e54974879de9524b8effc16211108008c",
+            "input_tokens": 597,
+            "output_tokens": 10,
+            "latency_ms": 1306,
+            "http_status": null,
+            "candidate_id": "inspect_registry",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "checks": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0,
+        "event_links_checked": 2,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "action_proposals": 1,
+        "legal_action_proposals": 1,
+        "sources_checked": 1,
+        "missing_sources": 0,
+        "fact_claim_errors": 0
+      }
+    },
+    {
+      "actor": "张昌宗",
+      "goal": "弄清香囊领用记录，避免卷入对宫闱秘录的追问",
+      "motivation": "担心自己的香囊引起误解，希望先从领用单查清批次",
+      "relationships": {
+        "$player": 0,
+        "太平公主": -1
+      },
+      "knowledge_ids": [
+        "sachet_mark"
+      ],
+      "reaction": "defer",
+      "driver": "llm",
+      "events": [
+        {
+          "id": "bffa9e47c47f4d839cf3ac1831322a14",
+          "kind": "show",
+          "actor": "$player",
+          "recipient": "张昌宗",
+          "source": "evidence_manuscript_missing",
+          "cause": null
+        },
+        {
+          "id": "066e05fb5e8a480a837c789df82ced23",
+          "kind": "decision",
+          "actor": "张昌宗",
+          "recipient": null,
+          "source": "registry",
+          "cause": "bffa9e47c47f4d839cf3ac1831322a14"
+        }
+      ],
+      "model": {
+        "attempts": 1,
+        "input_tokens": 430,
+        "output_tokens": 8,
+        "input_budget_used": 430,
+        "output_budget_used": 8,
+        "latency_ms": 1013,
+        "retries": 0,
+        "fallbacks": 0,
+        "outcomes": {
+          "ok": 1
+        },
+        "audit": [
+          {
+            "at": 1795613697.167,
+            "purpose": "reaction",
+            "driver": "llm",
+            "status": "ok",
+            "fallback": false,
+            "attempt": 1,
+            "retry": false,
+            "request_sha256": "d5f91096830fc641844df9b4284f77e49864619b5a2902886534b0a5aa357139",
+            "input_tokens": 430,
+            "output_tokens": 8,
+            "latency_ms": 1013,
+            "http_status": null,
+            "candidate_id": "defer",
+            "provider": "deepseek",
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "checks": {
+        "role_knowledge_overreach": 0,
+        "private_model_exposure": 0,
+        "event_links_checked": 1,
+        "invalid_event_links": 0,
+        "duplicate_event_ids": 0,
+        "action_proposals": 1,
+        "legal_action_proposals": 1
+      }
+    }
+  ]
+}
