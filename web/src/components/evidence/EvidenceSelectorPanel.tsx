@@ -19,7 +19,7 @@ import {
   IconSend,
   IconEye
 } from '@tabler/icons-react';
-import { Evidence } from '../../types/evidence';
+import { Evidence, EvidenceInventory } from '../../types/evidence';
 import { getFilteredEvidences } from '../../utils/evidenceManager';
 import { getEvidenceIcon } from '../../utils/evidenceIconUtils';
 import EvidenceCard from './EvidenceCard';
@@ -42,10 +42,11 @@ interface EvidenceSelectorPanelProps {
   onSend: (evidence: Evidence, textContent?: string) => void;
   sessionId: string;
   currentActor?: string;
+  inventory?: EvidenceInventory;
 }
 
 const EvidenceSelectorPanel: React.FC<EvidenceSelectorPanelProps> = ({
-  opened, onClose, onSelect, onSend, sessionId, currentActor
+  opened, onClose, onSelect, onSend, sessionId, currentActor, inventory
 }) => {
   const [evidences, setEvidences] = useState<Evidence[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,13 +58,13 @@ const EvidenceSelectorPanel: React.FC<EvidenceSelectorPanelProps> = ({
       const timeoutId = setTimeout(() => { loadEvidences(); }, searchQuery ? 300 : 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [opened, sessionId, searchQuery]);
+  }, [opened, sessionId, searchQuery, inventory]);
 
   const loadEvidences = () => {
     try {
       const filteredEvidences = getFilteredEvidences(sessionId, {
         searchQuery: searchQuery.trim() || undefined
-      });
+      }, inventory);
       const sortedEvidences = filteredEvidences.sort((a, b) => {
         if (!currentActor) return 0;
         const aRelevant = a.relatedActors.includes(currentActor);

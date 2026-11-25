@@ -4,7 +4,7 @@ import {
   LLMMessage,
   useMysteryContext,
 } from "../providers/mysteryContext";
-import { Button, Group, Stack, Text, TextInput, ActionIcon, Tooltip } from "@mantine/core";
+import { Badge, Button, Group, Stack, Text, TextInput, ActionIcon, Tooltip } from "@mantine/core";
 import { IconPhoto, IconRefresh, IconNotes, IconPaperclip } from "@tabler/icons-react";
 import invokeAI, { invokeAIStream } from "../api/invoke";
 import ActorImage from "./ActorImage";
@@ -12,7 +12,7 @@ import ChatMessage from "./ChatMessage";
 import { generateBackgroundFromActor } from "../api/backgroundGenerator";
 import { useSessionContext } from "../providers/sessionContext";
 import { useScriptContext } from "../providers/scriptContext";
-import { useNpcActions } from "../providers/npcActions";
+import { decisionLabel, useNpcActions } from "../providers/npcActions";
 import CHARACTER_DATA from "../characters.json";
 import { 
   generateRoleReactionPrompt, 
@@ -158,7 +158,7 @@ const sendChatStream = (
   let enhancedActor = { ...actor, messages };
   
   // 在后剧情模式下，直接使用原始消息，不进行增强处理
-  if (currentPlayerActor && !postGame) {
+  if (currentPlayerActor && !postGame && !managedChat) {
     const mode = getInteractionMode(currentPlayerActor, actor);
     const lastMessage = messages[messages.length - 1];
     
@@ -215,7 +215,12 @@ const sendChatStream = (
   if (managedChat) {
     enhancedActor = {
       ...enhancedActor,
-      context: enhancedActor.context + "\n这轮只回应当面交流。委托由调查系统处理。请勿接受或承诺新的委托，也不要声称已在对话之外联系角色、查阅材料或执行核查。",
+      isKiller: false,
+      roleType: actor.roleType === '凶手' ? '嫌疑人' : actor.roleType,
+      secret: '',
+      violation: '',
+      context: '以角色口吻回应日常话题。调查事实由调查系统提供。请保留未查证的说法，不补写案情、证据或角色已经执行的行动。',
+      messages: messages.slice(-12).map(({ role, content }) => ({ role, content })),
     };
   }
 
@@ -251,7 +256,7 @@ const sendChatStream = (
     actor: enhancedActor,
     detectiveName,
     victimName,
-    allActors,
+    allActors: managedChat ? undefined : allActors,
     onChunk: (content: string) => updateAssistant(assistantMessage.content + content),
     onEnd: () => {
       setLoading(false);
@@ -265,6 +270,47 @@ const sendChatStream = (
 
   return cancelStream;
 };
+
+function ReplyDetails({ message }: { message: LLMMessage }) {
+  const npc = useNpcActions();
+  const [shared, setShared] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [error, setError] = useState('');
+  const label = decisionLabel(message.npcDriver);
+  const classification = message.npcClassification === 'claim' || message.npcClassification === 'fact';
+  const turnId = message.npcTurnId;
+  if (message.role !== 'assistant' || !turnId || (!label && !classification && !message.npcSource)) return null;
+
+  async function share() {
+    if (!npc || !turnId || shared || sharing) return;
+    setSharing(true);
+    setError('');
+    try {
+      await npc.share(turnId);
+      setShared(true);
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : '回报暂时无法公开');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  return (
+    <Group gap="xs" mb="sm" pl="sm">
+      {label && <Badge size="xs" color={message.npcDriver === 'fallback' ? 'orange' : 'cyan'} variant="light">{label}</Badge>}
+      {classification && <Badge size="xs" color={message.npcClassification === 'fact' ? 'teal' : 'yellow'} variant="light">
+        {message.npcClassification === 'fact' ? '已核实材料' : '角色主张'}
+      </Badge>}
+      {message.npcSource && <Text size="xs" c="gray.3">来源 {message.npcSource}</Text>}
+      {classification && npc?.managed && (
+        <Button variant="subtle" color="cyan" size="compact-xs" loading={sharing} disabled={shared} onClick={() => void share()}>
+          {shared ? '已公开' : '公开回报'}
+        </Button>
+      )}
+      {error && <Text size="xs" c="red.3" role="alert">{error}</Text>}
+    </Group>
+  );
+}
 
 const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
   const [currMessage, setCurrMessage] = React.useState("");
@@ -384,7 +430,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
     // 立即关闭笔记选择器，提供即时反馈
     setShowNoteSelector(false);
 
-    const cancel = sendChatStream([...actor.messages, noteMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors);
+    const cancel = sendChatStream([...actor.messages, noteMessage], setActors, globalStory, sessionId, actor, setLoading, currentPlayerActor, postGame, detectiveName, victimName, actors, npcAction?.managed);
     setCancelStream(() => cancel);
   };
 
@@ -634,18 +680,17 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
           paddingRight: '8px' // 为滚动条留出空间
         }}>
           {actor.messages.map((m, i) => (
-            <ChatMessage
-              key={i}
-              message={m}
-              actor={actor}
-              currentPlayerActor={currentPlayerActor}
-              isUser={m.role === "user"}
-            />
+            <React.Fragment key={m.npcTurnId ? m.npcTurnId + ':' + m.role : i}>
+              <ChatMessage message={m} actor={actor} currentPlayerActor={currentPlayerActor} isUser={m.role === "user"} />
+              <ReplyDetails message={m} />
+            </React.Fragment>
           ))}
         </div>
         
         {/* 输入框区域 - 固定在底部 */}
-        <Group style={{ 
+        {postGame && npcAction?.managed ? (
+          <Text size="sm" c="gray.3" mt="md">此席位已结案。可在调查记录中查看解释。</Text>
+        ) : <Group style={{
           marginTop: '16px',
           flexShrink: 0 // 防止输入框被压缩
         }}>
@@ -773,7 +818,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
         >
           {loading ? '发送中...' : '发送'}
         </Button>
-        </Group>
+        </Group>}
       </div>
 
       </Stack>
@@ -786,6 +831,7 @@ const ActorChat = ({ actor, currentPlayerActor, postGame }: Props) => {
         onSend={handleEvidenceSend}
         sessionId={sessionId}
         currentActor={actor.name}
+        inventory={npcAction?.inventory}
       />
 
       {/* 笔记选择器 */}

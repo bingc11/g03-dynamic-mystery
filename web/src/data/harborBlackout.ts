@@ -2,6 +2,7 @@ import type { Script } from '../types/script';
 
 export const harborBlackout: Script = {
   id: 'harbor_blackout',
+  npcManaged: true,
   title: '雾港停电案',
   description: '雾港的仓库短暂停电，一名货运审计员在过磅间遇害。两名目击者记下了不同的时间，调查要从西门值守、监控校时和一张残缺的过磅联入手。',
   author: 'G03',
@@ -38,7 +39,7 @@ export const harborBlackout: Script = {
       name: '阮岑',
       bio: '西门夜班门卫，负责停电时手记人员出入及保管夜班器材领用表。',
       personality: '惜字如金，习惯多看一遍自己的记录才下判断。',
-      context: '你用岗亭的北塔标准钟记过一个身穿编号 07 反光背心的访客的入库时间。夜雾遮住了来人的脸。',
+      context: '你负责西门的夜班出入登记。',
       secret: '',
       violation: '不能声称自己目击了访客的身份。器具领用情况要按领用表核实。',
       image: 'innocent.png',
@@ -48,7 +49,7 @@ export const harborBlackout: Script = {
       name: '林遥',
       bio: '港区设备检修电工，负责复电与时钟对照。',
       personality: '说话直接。比起推测，习惯翻找工单和日志。',
-      context: '你手头有北塔校时和监控复电日志。你留意到不同人可能用了不同的钟。',
+      context: '你负责设备检修和复电记录。',
       secret: '',
       violation: '没有比对日志前只说自己观察到的差异。',
       image: 'amateur.png',
@@ -58,12 +59,11 @@ export const harborBlackout: Script = {
       name: '罗钧',
       bio: '旧仓库的夜班主管，管理过磅间与货运账本。',
       personality: '守规矩的样子，谈到旧货账时容易转移话题。',
-      context: '你负责夜航四号的过磅。程砚发现同批货在账上有两个重量，准备把复写的两联一起交给审计组。',
-      secret: '你故意虚报夜航四号的货重，多收的款没有入公账。为掩盖虚报货重，你穿着编号 07 的反光背心，经西门进库，用已领用的备用钥匙进入过磅间杀害程砚，带走了他桌上的一联过磅单。半张压在桌垫里的复写联留了下来。',
-      violation: '结案前不透露虚报货重，也不承认进入过磅间。',
+      context: '你负责夜航四号的过磅。',
+      secret: '',
+      violation: '提到货运账目时以已经核实的资料为准。',
       image: 'solitary.png',
-      isKiller: true,
-      roleType: '凶手'
+      roleType: '嫌疑人'
     },
     {
       name: '程砚',
@@ -83,8 +83,7 @@ export const harborBlackout: Script = {
     estimatedDuration: 25,
     playerName: '裴宁',
     playerRole: '裴宁',
-    partnerRole: '宋屿',
-    killerRole: '罗钧'
+    partnerRole: '宋屿'
   },
   evidences: [
     {
@@ -113,18 +112,6 @@ export const harborBlackout: Script = {
       importance: 'critical',
       relatedCharacters: ['程砚', '罗钧'],
       initialState: 'surface'
-    }
-  ],
-  quiz: [
-    {
-      question: '谁杀了程砚？',
-      choices: ['阮岑', '林遥', '宋屿', '罗钧'],
-      correctAnswer: '罗钧'
-    },
-    {
-      question: '程砚为何遇害？',
-      choices: ['逃避停电故障追责', '掩盖虚报货重', '掩饰器材遗失', '争夺夜班主管职位'],
-      correctAnswer: '掩盖虚报货重'
     }
   ]
 };

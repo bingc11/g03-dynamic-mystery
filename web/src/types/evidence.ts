@@ -6,6 +6,12 @@ export type EvidenceImportance = 'low' | 'medium' | 'high' | 'critical';
 export type EvidenceReactionType = 'basic' | 'contradiction' | 'breakthrough';
 export type EmotionalState = 'nervous' | 'angry' | 'confused' | 'guilty' | 'calm';
 
+export type EvidenceInventory = {
+  registered: string[];
+  held: string[];
+  details: { id: string; name: string; text: string; category?: EvidenceCategory; importance?: EvidenceImportance }[];
+};
+
 // 证物基础接口
 export interface Evidence {
   // 基础信息

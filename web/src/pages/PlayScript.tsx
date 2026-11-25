@@ -10,7 +10,8 @@ import Home from './Home';
 const PlayScript: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { key: playthrough } = useLocation();
+  const { key: playthrough, search } = useLocation();
+  const invite = new URLSearchParams(search).get('invite') || undefined;
   const { currentScript, loadScript, scripts } = useScriptContext();
   const { setActors, setGlobalStory } = useMysteryContext();
   
@@ -60,7 +61,6 @@ const PlayScript: React.FC = () => {
         
         // 🔍 调试：输出所有角色信息
         console.log('📚 剧本加载完成，角色数量:', Object.keys(actors).length);
-        console.log('🎭 所有角色信息:', actors);
         // console.log('🎨 角色背景图片汇总:', Object.values(actors).map(actor => ({
         //   name: actor.name,
         //   backgroundImage: actor.backgroundImage
@@ -143,7 +143,9 @@ const PlayScript: React.FC = () => {
       </div>
 
       {/* 使用现有的游戏界面 */}
-      <NpcActions key={loaded} caseId={currentScript.id} playthrough={playthrough}><Home /></NpcActions>
+      <NpcActions key={loaded} caseId={currentScript.id} playthrough={playthrough} invite={invite}>
+        <Home />
+      </NpcActions>
     </div>
   );
 };
